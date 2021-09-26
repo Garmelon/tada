@@ -1,88 +1,24 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::fmt::{self, Debug};
-use std::hash::{Hash, Hasher};
-use std::rc::{Rc, Weak};
+use crate::table::{Table, TableOwner};
 
-struct Table(Weak<RefCell<HashMap<Key, Value>>>);
-
-impl Debug for Table {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.0.upgrade() {
-            None => write!(f, "<broken table>"),
-            Some(rc) => {
-                // This may panic if we're not careful?
-                let hash_map = &*rc.borrow();
-                hash_map.fmt(f)
-            }
-        }
-    }
-}
-
-impl PartialEq for Table {
-    fn eq(&self, other: &Self) -> bool {
-        self.0.ptr_eq(&other.0)
-    }
-}
-
-impl Eq for Table {}
-
-impl Hash for Table {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.0.as_ptr().hash(state);
-    }
-}
-
-#[derive(PartialEq, Eq, Hash)]
-enum Key {
-    String(Box<String>),
-    Bool(bool),
-    Int(i64),
-    Table(Table),
-}
-
-impl Debug for Key {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::String(s) => s.fmt(f),
-            Self::Bool(b) => b.fmt(f),
-            Self::Int(i) => i.fmt(f),
-            Self::Table(t) => t.fmt(f),
-        }
-    }
-}
-
-#[derive(PartialEq)]
-enum Value {
-    String(Box<String>),
-    Bool(bool),
-    Int(i64),
-    Table(Table),
-    Float(f64),
-}
-
-impl Debug for Value {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::String(s) => s.fmt(f),
-            Self::Bool(b) => b.fmt(f),
-            Self::Int(i) => i.fmt(f),
-            Self::Table(t) => t.fmt(f),
-            Self::Float(d) => d.fmt(f),
-        }
-    }
-}
+mod table;
+mod values;
 
 fn main() {
     println!("Hello, world!");
 
-    let mut table = HashMap::new();
-    table.insert(
-        Key::String(Box::new("Hello".into())),
-        Value::String(Box::new("World".into())),
-    );
-    let table = Rc::new(RefCell::new(table));
+    let table_owner = TableOwner::new();
 
-    let table_value = Value::Table(Table(Rc::downgrade(&table)));
-    dbg!(table_value);
+    let table = Table::new(&table_owner);
+
+    table.insert("Hello".into(), "World".into());
+    table.insert(1.into(), "Goodbye".into());
+    dbg!(&table);
+
+    table.remove(&0.into());
+    table.remove(&1.into());
+    table.remove(&2.into());
+    dbg!(&table);
+
+    table.insert(true.into(), table.clone().into());
+    dbg!(&table);
 }
