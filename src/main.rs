@@ -35,7 +35,7 @@ impl Hash for Table {
 
 #[derive(PartialEq, Eq, Hash)]
 enum Key {
-    String(String),
+    String(Box<String>),
     Bool(bool),
     Int(i64),
     Table(Table),
@@ -54,14 +54,20 @@ impl Debug for Key {
 
 #[derive(PartialEq)]
 enum Value {
-    Key(Key),
+    String(Box<String>),
+    Bool(bool),
+    Int(i64),
+    Table(Table),
     Float(f64),
 }
 
 impl Debug for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Key(k) => k.fmt(f),
+            Self::String(s) => s.fmt(f),
+            Self::Bool(b) => b.fmt(f),
+            Self::Int(i) => i.fmt(f),
+            Self::Table(t) => t.fmt(f),
             Self::Float(d) => d.fmt(f),
         }
     }
@@ -72,11 +78,11 @@ fn main() {
 
     let mut table = HashMap::new();
     table.insert(
-        Key::String("Hello".into()),
-        Value::Key(Key::String("World".into())),
+        Key::String(Box::new("Hello".into())),
+        Value::String(Box::new("World".into())),
     );
     let table = Rc::new(RefCell::new(table));
 
-    let table_value = Value::Key(Key::Table(Table(Rc::downgrade(&table))));
+    let table_value = Value::Table(Table(Rc::downgrade(&table)));
     dbg!(table_value);
 }
