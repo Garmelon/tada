@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fmt::{self, Debug};
+use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 use std::rc::{Rc, Weak};
 
@@ -14,24 +14,8 @@ impl TableOwner {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Table(Weak<RefCell<HashMap<Key, Value>>>);
-
-impl Debug for Table {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let rc = match self.0.upgrade() {
-            Some(rc) => rc,
-            None => return write!(f, "<broken table>"),
-        };
-
-        let hash_map = match rc.try_borrow_mut() {
-            Ok(hash_map) => hash_map,
-            Err(_) => return write!(f, "<cyclic ref>"),
-        };
-
-        hash_map.fmt(f)
-    }
-}
 
 impl PartialEq for Table {
     fn eq(&self, other: &Self) -> bool {

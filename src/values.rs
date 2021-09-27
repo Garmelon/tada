@@ -1,24 +1,18 @@
-use std::fmt::{self, Debug};
+use std::fmt::Debug;
 
+use crate::builtin::Builtin;
+use crate::path::Path;
 use crate::table::Table;
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Key {
-    String(Box<String>),
     Bool(bool),
+    Builtin(Builtin),
     Int(i64),
+    Nil,
+    Path(Path),
+    String(Box<String>),
     Table(Table),
-}
-
-impl Debug for Key {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::String(s) => s.fmt(f),
-            Self::Bool(b) => b.fmt(f),
-            Self::Int(i) => i.fmt(f),
-            Self::Table(t) => t.fmt(f),
-        }
-    }
 }
 
 impl From<Box<String>> for Key {
@@ -57,25 +51,18 @@ impl From<Table> for Key {
     }
 }
 
-#[derive(Clone, PartialEq)]
+// TODO: Unwrap the Key part so this is only 16, not 24 bytes
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
-    String(Box<String>),
     Bool(bool),
+    Builtin(Builtin),
     Int(i64),
-    Float(f64),
+    Nil,
+    Path(Path),
+    String(Box<String>),
     Table(Table),
-}
 
-impl Debug for Value {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::String(s) => s.fmt(f),
-            Self::Bool(b) => b.fmt(f),
-            Self::Int(i) => i.fmt(f),
-            Self::Table(t) => t.fmt(f),
-            Self::Float(d) => d.fmt(f),
-        }
-    }
+    Float(f64),
 }
 
 impl From<Box<String>> for Value {
@@ -108,14 +95,28 @@ impl From<i64> for Value {
     }
 }
 
+impl From<Table> for Value {
+    fn from(t: Table) -> Self {
+        Self::Table(t)
+    }
+}
+
 impl From<f64> for Value {
     fn from(f: f64) -> Self {
         Self::Float(f)
     }
 }
 
-impl From<Table> for Value {
-    fn from(t: Table) -> Self {
-        Self::Table(t)
+impl From<Key> for Value {
+    fn from(k: Key) -> Self {
+        match k {
+            Key::Bool(b) => Self::Bool(b),
+            Key::Builtin(b) => Self::Builtin(b),
+            Key::Int(i) => Self::Int(i),
+            Key::Nil => Self::Nil,
+            Key::Path(p) => Self::Path(p),
+            Key::String(s) => Self::String(s),
+            Key::Table(t) => Self::Table(t),
+        }
     }
 }
