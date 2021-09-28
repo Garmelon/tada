@@ -1,10 +1,20 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 use std::rc::{Rc, Weak};
 
-use crate::values::{Key, Value};
+use crate::value::Value;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Key {
+    Bool(bool),
+    // Builtin(Builtin),
+    Int(i64),
+    String(Box<String>),
+    Table(Table),
+}
 
 pub struct TableOwner(Rc<RefCell<HashMap<Key, Value>>>);
 
