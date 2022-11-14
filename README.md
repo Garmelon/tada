@@ -1,11 +1,14 @@
 # Tada
 
-Tada is an interpreted language inspired by lisp and lua. It's name means
-"tabular data" or "table data".
+Tada is an interpreted language inspired by Lua.
 
-I've wanted to learn a lisp for a while now, but have never come further than
-the absolute basics. Also, I've never created a proper programming language
-before. So I decided to make one - inspired by my rudimentary understanding of
-lisp, combined with a bit of lua tables.
+It started with the idea of making Lua more consistent. For example, why not
+return multiple values by returning and then destructuring a table? That would
+also allow accessing return values besides the first in expressions. Since we
+need destructuring anyways, why not use a table to pass arguments? Positional
+and keyword arguments would directly fall out of that approach.
 
-https://github.com/quchen/stgi
+After some discussion, this turned into using tables as answer for pretty much
+every design decision. Functions? Tables. Code blocks? Tables, their curly
+braces fit pretty well already. Scopes? Tables. Function calls? Tables. Source
+code? Tables, with most "normal" syntax being simple syntactic sugar.
