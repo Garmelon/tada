@@ -10,7 +10,6 @@ pub enum Value {
     Int(i64),
     // String(Box<String>),
     Table(Table),
-
     // Float(f64),
     // Nil,
     // Path(Table),
