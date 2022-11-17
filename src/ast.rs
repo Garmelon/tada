@@ -1,11 +1,19 @@
-#[derive(Debug, Clone)]
+use std::fmt;
+
+#[derive(Clone)]
 pub struct Ident(pub String);
+
+impl fmt::Debug for Ident {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "i#{}", self.0)
+    }
+}
 
 /// Positive number literal.
 ///
 /// Possible bases are binary, decimal, hexadecimal. Underscores can be inserted
 /// before and after any digit.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum NumLit {
     /// - `0b_0001_1011`
     /// - `0b10`
@@ -18,6 +26,16 @@ pub enum NumLit {
     /// - `0x_c0_f3`
     /// - `0xB`
     Hex(i64, String),
+}
+
+impl fmt::Debug for NumLit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Bin(_, str) => write!(f, "0b{str}"),
+            Self::Dec(_, str) => write!(f, "{str}"),
+            Self::Hex(_, str) => write!(f, "0x{str}"),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -36,7 +54,7 @@ pub struct TableLit {
     pub trailing_comma: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum Lit {
     /// `nil`
     Nil,
@@ -55,6 +73,21 @@ pub enum Lit {
 
     /// See [`TableLit`].
     Table(TableLit),
+}
+
+impl fmt::Debug for Lit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Nil => write!(f, "l#nil"),
+            Self::Bool(b) => write!(f, "l#{b:?}"),
+            Self::Num(n) => write!(f, "l#{n:?}"),
+            Self::String(s) => write!(f, "l#{s:?}"),
+            Self::Table(t) => {
+                write!(f, "l#")?;
+                t.fmt(f)
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
