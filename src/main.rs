@@ -1,9 +1,11 @@
 use std::fs;
 use std::path::PathBuf;
 
+use chumsky::Parser as _;
 use clap::Parser;
 
 mod builtin;
+mod parser;
 mod table;
 mod value;
 
@@ -25,9 +27,14 @@ fn main() -> anyhow::Result<()> {
     match args.command {
         Command::Parse { file } => {
             let content = fs::read_to_string(&file)?;
-            print!("{content}");
-            if !content.ends_with('\n') {
-                println!();
+            match parser::parser().parse(&content as &str) {
+                Ok(lit) => println!("Successful parse: {lit:#?}"),
+                Err(errs) => {
+                    println!("Parsing failed");
+                    for err in errs {
+                        println!("{err:?}");
+                    }
+                }
             }
         }
     }
