@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use chumsky::Parser as _;
 use clap::Parser;
 
+mod ast;
 mod builtin;
 mod parser;
 mod table;
