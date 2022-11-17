@@ -1,18 +1,22 @@
 #[derive(Debug, Clone)]
 pub struct Ident(pub String);
 
+/// Positive number literal.
+///
+/// Possible bases are binary, decimal, hexadecimal. Underscores can be inserted
+/// before and after any digit.
 #[derive(Debug, Clone)]
 pub enum NumLit {
     /// - `0b_0001_1011`
-    /// - `-0b10`
+    /// - `0b10`
     Bin(i64, String),
 
     /// - `12_345`
-    /// - `-7`
+    /// - `7`
     Dec(i64, String),
 
     /// - `0x_c0_f3`
-    /// - `-0xB`
+    /// - `0xB`
     Hex(i64, String),
 }
 
