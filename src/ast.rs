@@ -27,12 +27,6 @@ pub enum TableLitElem {
 
     /// `foo: a`
     Named(Ident, Box<Expr>),
-
-    /// ```text
-    /// # foo
-    /// # bar
-    /// ```
-    BlockString(Vec<String>),
 }
 
 /// `'{ a, foo: b }`
