@@ -1,7 +1,7 @@
 use chumsky::prelude::*;
 use chumsky::text::Character;
 
-use crate::ast::{Expr, Ident, Lit, NumLit, TableLit, TableLitElem};
+use crate::ast::{Expr, Ident, Lit, NumLit, TableConstr, TableConstrElem, TableLit, TableLitElem};
 
 fn ident() -> impl Parser<char, Ident, Error = Simple<char>> {
     text::ident().padded().map(Ident)
@@ -59,19 +59,24 @@ fn num_lit() -> impl Parser<char, NumLit, Error = Simple<char>> + Clone {
         .padded()
 }
 
-fn table_lit_elems(
+fn table_lit_elem(
     expr: impl Parser<char, Expr, Error = Simple<char>> + Clone,
-) -> impl Parser<char, (Vec<TableLitElem>, bool), Error = Simple<char>> {
+) -> impl Parser<char, TableLitElem, Error = Simple<char>> {
     let positional = expr.clone().map(|e| TableLitElem::Positional(Box::new(e)));
     let named = ident()
         .then_ignore(just(":"))
         .then(expr)
         .map(|(n, e)| TableLitElem::Named(n, Box::new(e)));
 
+    positional.or(named)
+}
+
+fn table_lit_elems(
+    expr: impl Parser<char, Expr, Error = Simple<char>> + Clone,
+) -> impl Parser<char, (Vec<TableLitElem>, bool), Error = Simple<char>> {
     let trailing_comma = just(',').or_not().map(|o| o.is_some());
 
-    positional
-        .or(named)
+    table_lit_elem(expr)
         .separated_by(just(','))
         .then(trailing_comma)
         .padded()
@@ -112,7 +117,44 @@ fn lit(
         .padded()
 }
 
-pub fn parser() -> impl Parser<char, Lit, Error = Simple<char>> {
+fn table_constr_elem(
+    expr: impl Parser<char, Expr, Error = Simple<char>> + Clone,
+) -> impl Parser<char, TableConstrElem, Error = Simple<char>> {
+    let lit = table_lit_elem(expr.clone()).map(TableConstrElem::Lit);
+    let indexed = (just('[').ignore_then(expr.clone()).then_ignore(just(']')))
+        .padded()
+        .then_ignore(just(':'))
+        .then(expr)
+        .map(|(i, v)| TableConstrElem::Indexed(Box::new(i), Box::new(v)));
+
+    lit.or(indexed)
+}
+
+fn table_constr_elems(
+    expr: impl Parser<char, Expr, Error = Simple<char>> + Clone,
+) -> impl Parser<char, (Vec<TableConstrElem>, bool), Error = Simple<char>> {
+    let trailing_comma = just(',').or_not().map(|o| o.is_some());
+
+    table_constr_elem(expr)
+        .separated_by(just(','))
+        .then(trailing_comma)
+        .padded()
+}
+
+fn table_constr(
+    expr: impl Parser<char, Expr, Error = Simple<char>> + Clone,
+) -> impl Parser<char, TableConstr, Error = Simple<char>> {
+    just("{")
+        .ignore_then(table_constr_elems(expr))
+        .then_ignore(just("}"))
+        .padded()
+        .map(|(elems, trailing_comma)| TableConstr {
+            elems,
+            trailing_comma,
+        })
+}
+
+pub fn parser() -> impl Parser<char, TableConstr, Error = Simple<char>> {
     let expr = num_lit().map(|num| Expr::Lit(Lit::Num(num)));
-    lit(expr).then_ignore(end())
+    table_constr(expr).then_ignore(end())
 }
