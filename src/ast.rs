@@ -23,6 +23,12 @@ enum TableLitElem {
 
     /// `foo: a`
     Named(Ident, Box<Expr>),
+
+    /// ```text
+    /// # foo
+    /// # bar
+    /// ```
+    MultlineString(String),
 }
 
 /// `'{ a, foo: b }`
@@ -55,11 +61,8 @@ enum Lit {
 
 #[derive(Debug, Clone)]
 enum TableConstrElem {
-    /// `a`
-    Positional(Box<Expr>),
-
-    /// `foo: a`
-    Named(Ident, Box<Expr>),
+    /// See [`TableLitElem`].
+    Lit(TableLitElem),
 
     /// `[a]: b`
     Indexed(Box<Expr>, Box<Expr>),
@@ -137,14 +140,7 @@ enum Expr {
     BinOp(Box<Expr>, BinOp, Box<Expr>),
 }
 
+/// The contents of a program file are just a table literal without the
+/// surrounding `'{` and `}`.
 #[derive(Debug, Clone)]
-enum Program {
-    /// At the beginning of the file:
-    /// ```text
-    /// module
-    /// ...
-    /// ```
-    Module(TableLit),
-
-    Expr(Expr),
-}
+struct Program(TableLit);
