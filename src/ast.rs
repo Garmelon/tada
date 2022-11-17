@@ -1,8 +1,8 @@
 #[derive(Debug, Clone)]
-struct Ident(String);
+pub struct Ident(pub String);
 
 #[derive(Debug, Clone)]
-enum NumLit {
+pub enum NumLit {
     /// - `0b_0001_1011`
     /// - `-0b10`
     Bin(i64, String),
@@ -17,7 +17,7 @@ enum NumLit {
 }
 
 #[derive(Debug, Clone)]
-enum TableLitElem {
+pub enum TableLitElem {
     /// `a`
     Positional(Box<Expr>),
 
@@ -28,18 +28,18 @@ enum TableLitElem {
     /// # foo
     /// # bar
     /// ```
-    MultlineString(String),
+    BlockString(Vec<String>),
 }
 
 /// `'{ a, foo: b }`
 #[derive(Debug, Clone)]
-struct TableLit {
-    elems: Vec<TableLitElem>,
-    trailing_comma: bool,
+pub struct TableLit {
+    pub elems: Vec<TableLitElem>,
+    pub trailing_comma: bool,
 }
 
 #[derive(Debug, Clone)]
-enum Lit {
+pub enum Lit {
     /// `nil`
     Nil,
 
@@ -60,7 +60,7 @@ enum Lit {
 }
 
 #[derive(Debug, Clone)]
-enum TableConstrElem {
+pub enum TableConstrElem {
     /// See [`TableLitElem`].
     Lit(TableLitElem),
 
@@ -70,13 +70,13 @@ enum TableConstrElem {
 
 /// `{ a, b, foo: c, [d]: e }`
 #[derive(Debug, Clone)]
-struct TableConstr {
-    elems: Vec<TableConstrElem>,
-    trailing_comma: bool,
+pub struct TableConstr {
+    pub elems: Vec<TableConstrElem>,
+    pub trailing_comma: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
-enum BinOp {
+pub enum BinOp {
     /// `+`
     Add,
     /// `-`
@@ -98,7 +98,7 @@ enum BinOp {
 }
 
 #[derive(Debug, Clone)]
-enum Expr {
+pub enum Expr {
     Lit(Lit),
 
     /// See [`TableConstr`].
@@ -143,4 +143,4 @@ enum Expr {
 /// The contents of a program file are just a table literal without the
 /// surrounding `'{` and `}`.
 #[derive(Debug, Clone)]
-struct Program(TableLit);
+pub struct Program(pub TableLit);
