@@ -90,7 +90,29 @@ fn table_lit(
         })
 }
 
-pub fn parser() -> impl Parser<char, TableLit, Error = Simple<char>> {
+fn string_lit() -> impl Parser<char, String, Error = Simple<char>> + Clone {
+    filter(|_| false).to(String::new()) // TODO Implement
+}
+
+fn lit(
+    expr: impl Parser<char, Expr, Error = Simple<char>> + Clone,
+) -> impl Parser<char, Lit, Error = Simple<char>> {
+    let nil = text::keyword("nil").to(Lit::Nil);
+    let r#true = text::keyword("true").to(Lit::Bool(true));
+    let r#false = text::keyword("false").to(Lit::Bool(false));
+    let num = num_lit().map(Lit::Num);
+    let string = string_lit().map(Lit::String);
+    let table = table_lit(expr).map(Lit::Table);
+
+    nil.or(r#true)
+        .or(r#false)
+        .or(num)
+        .or(string)
+        .or(table)
+        .padded()
+}
+
+pub fn parser() -> impl Parser<char, Lit, Error = Simple<char>> {
     let expr = num_lit().map(|num| Expr::Lit(Lit::Num(num)));
-    table_lit(expr).then_ignore(end())
+    lit(expr).then_ignore(end())
 }
