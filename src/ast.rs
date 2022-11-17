@@ -135,17 +135,17 @@ pub enum Expr {
     /// See [`TableConstr`].
     TableConstr(TableConstr),
 
-    /// `foo`
-    Var(Ident),
-
     /// `[a]`
-    VarExpr(Box<Expr>),
+    Var(Box<Expr>),
 
-    /// `foo = a`
-    VarAssign(Ident, Box<Expr>),
+    /// `foo`
+    VarIdent(Ident),
 
     /// `[a] = b`
-    VarExprAssign(Box<Expr>, Box<Expr>),
+    VarAssign(Box<Expr>, Box<Expr>),
+
+    /// `foo = a`
+    VarIdentAssign(Ident, Box<Expr>),
 
     /// `-a`
     Neg(Box<Expr>),
@@ -153,17 +153,17 @@ pub enum Expr {
     /// `not a`
     Not(Box<Expr>),
 
-    /// `a.foo`
-    Field(Box<Expr>, Ident),
-
     /// `a[b]`
-    FieldExpr(Box<Expr>, Box<Expr>),
+    Field(Box<Expr>, Box<Expr>),
 
-    /// `a.foo = b`
-    FieldAssign(Box<Expr>, Ident, Box<Expr>),
+    /// `a.foo`
+    FieldIdent(Box<Expr>, Ident),
 
     /// `a[b] = c`
-    FieldExprAssign(Box<Expr>, Box<Expr>, Box<Expr>),
+    FieldAssign(Box<Expr>, Box<Expr>, Box<Expr>),
+
+    /// `a.foo = b`
+    FieldIdentAssign(Box<Expr>, Ident, Box<Expr>),
 
     /// - `a + b`
     /// - `a == b`
