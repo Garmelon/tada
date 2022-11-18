@@ -80,7 +80,7 @@ fn num_lit() -> impl Parser<char, NumLit, Error = Error> + Clone {
 
 fn string_lit() -> impl Parser<char, StringLit, Error = Error> {
     // TODO Parse string literals
-    filter(|_| false).to(unreachable!())
+    filter(|_| false).map(|_| unreachable!())
 }
 
 fn table_lit_elem(
@@ -127,7 +127,21 @@ fn table_lit(
         })
 }
 
-pub fn parser() -> impl Parser<char, TableLit, Error = Error> {
-    let expr = num_lit().map(|n| Expr::Lit(Lit::Num(n)));
-    table_lit(expr).padded().then_ignore(end())
+fn lit(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Lit, Error = Error> {
+    let nil = text::keyword("nil").map_with_span(|_, span| Lit::Nil(span));
+    let r#true = text::keyword("true").map_with_span(|_, span| Lit::Bool(true, span));
+    let r#false = text::keyword("false").map_with_span(|_, span| Lit::Bool(false, span));
+    let num = num_lit().map(Lit::Num);
+    let string = string_lit().map(Lit::String);
+    let table = table_lit(expr).map(Lit::Table);
+
+    nil.or(r#true).or(r#false).or(num).or(string).or(table)
+}
+
+pub fn parser() -> impl Parser<char, Expr, Error = Error> {
+    recursive(|expr| lit(expr).map(Expr::Lit))
+        .padded()
+        .then_ignore(end())
 }
