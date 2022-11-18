@@ -7,6 +7,7 @@ use clap::Parser;
 mod ast;
 mod builtin;
 mod parser;
+mod span;
 mod table;
 mod value;
 
