@@ -1,6 +1,8 @@
 use std::fmt;
 use std::ops::Range;
 
+use chumsky::Stream;
+
 #[derive(Clone, Copy)]
 pub struct Span {
     start: usize,
@@ -63,4 +65,14 @@ impl chumsky::Span for Span {
     fn end(&self) -> Self::Offset {
         self.end
     }
+}
+
+pub fn stream_from_str<'a>(
+    s: &'a str,
+) -> Stream<'a, char, Span, Box<dyn Iterator<Item = (char, Span)> + 'a>> {
+    let len = s.chars().count();
+    Stream::from_iter(
+        Span::new(len, len),
+        Box::new(s.chars().enumerate().map(|(i, c)| (c, Span::new(i, i + 1)))),
+    )
 }
