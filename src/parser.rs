@@ -1,7 +1,7 @@
 use chumsky::prelude::*;
 use chumsky::text::Character;
 
-use crate::ast::{Ident, NumLit, NumLitStr, Space};
+use crate::ast::{Expr, Ident, Lit, NumLit, NumLitStr, Space, StringLit, TableLit, TableLitElem};
 use crate::span::Span;
 
 type Error = Simple<char, Span>;
@@ -21,7 +21,7 @@ fn ident() -> impl Parser<char, Ident, Error = Error> {
     text::ident().map_with_span(|name, span| Ident { name, span })
 }
 
-fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = Error> {
+fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = Error> + Clone {
     // Minimum amount of digits required to represent i64::MAX. The rest of this
     // code assumes that any value that can be represented using this amount of
     // digits fits into an u64.
@@ -71,13 +71,63 @@ fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = 
         })
 }
 
-fn num_lit() -> impl Parser<char, NumLit, Error = Error> {
+fn num_lit() -> impl Parser<char, NumLit, Error = Error> + Clone {
     (just("0b").ignore_then(num_lit_str_radix(2)))
         .or(just("0x").ignore_then(num_lit_str_radix(16)))
         .or(num_lit_str_radix(10))
         .map_with_span(|(value, str), span| NumLit { value, str, span })
 }
 
-pub fn parser() -> impl Parser<char, NumLit, Error = Error> {
-    num_lit().padded().then_ignore(end())
+fn string_lit() -> impl Parser<char, StringLit, Error = Error> {
+    // TODO Parse string literals
+    filter(|_| false).to(unreachable!())
+}
+
+fn table_lit_elem(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, TableLitElem, Error = Error> {
+    let positional = expr
+        .clone()
+        .map(|value| TableLitElem::Positional(Box::new(value)));
+
+    let named = ident()
+        .then(space())
+        .then_ignore(just(':'))
+        .then(space())
+        .then(expr)
+        .map(|(((name, s0), s1), value)| TableLitElem::Named {
+            name,
+            s0,
+            s1,
+            value: Box::new(value),
+        });
+
+    positional.or(named)
+}
+
+fn table_lit(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, TableLit, Error = Error> {
+    let elem = space()
+        .then(table_lit_elem(expr))
+        .then(space())
+        .map(|((s0, elem), s1)| (s0, elem, s1));
+
+    let trailing_comma = just(",").ignore_then(space()).or_not();
+
+    let elems = elem.separated_by(just(",")).then(trailing_comma);
+
+    just("'{")
+        .ignore_then(elems)
+        .then_ignore(just("}"))
+        .map_with_span(|(elems, trailing_comma), span| TableLit {
+            elems,
+            trailing_comma,
+            span,
+        })
+}
+
+pub fn parser() -> impl Parser<char, TableLit, Error = Error> {
+    let expr = num_lit().map(|n| Expr::Lit(Lit::Num(n)));
+    table_lit(expr).padded().then_ignore(end())
 }
