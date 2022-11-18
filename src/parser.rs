@@ -5,7 +5,7 @@ use crate::ast::{
     Expr, Ident, Lit, NumLit, NumLitStr, Space, StringLit, TableConstr, TableConstrElem, TableLit,
     TableLitElem,
 };
-use crate::span::Span;
+use crate::span::{HasSpan, Span};
 
 type Error = Simple<char, Span>;
 
@@ -286,10 +286,137 @@ fn atom(
         .or(var_ident)
 }
 
+enum Suffix {
+    /// See [`Expr::Field`].
+    Field {
+        s0: Space,
+        s1: Space,
+        index: Box<Expr>,
+        s2: Space,
+        span: Span,
+    },
+
+    /// See [`Expr::FieldIdent`].
+    FieldIdent { s0: Space, s1: Space, ident: Ident },
+
+    /// See [`Expr::FieldAssign`].
+    FieldAssign {
+        s0: Space,
+        s1: Space,
+        index: Box<Expr>,
+        s2: Space,
+        s3: Space,
+        s4: Space,
+        value: Box<Expr>,
+    },
+
+    /// See [`Expr::FieldIdentAssign`].
+    FieldIdentAssign {
+        s0: Space,
+        s1: Space,
+        ident: Ident,
+        s2: Space,
+        s3: Space,
+        value: Box<Expr>,
+    },
+}
+
+impl Suffix {
+    fn into_expr(self, expr: Expr) -> Expr {
+        let expr = Box::new(expr);
+        match self {
+            Suffix::Field {
+                s0,
+                s1,
+                index,
+                s2,
+                span,
+            } => Expr::Field {
+                span: expr.span().join(span),
+                expr,
+                s0,
+                s1,
+                index,
+                s2,
+            },
+            Suffix::FieldIdent { s0, s1, ident } => Expr::FieldIdent {
+                expr,
+                s0,
+                s1,
+                ident,
+            },
+            Suffix::FieldAssign {
+                s0,
+                s1,
+                index,
+                s2,
+                s3,
+                s4,
+                value,
+            } => Expr::FieldAssign {
+                expr,
+                s0,
+                s1,
+                index,
+                s2,
+                s3,
+                s4,
+                value,
+            },
+            Suffix::FieldIdentAssign {
+                s0,
+                s1,
+                ident,
+                s2,
+                s3,
+                value,
+            } => Expr::FieldIdentAssign {
+                expr,
+                s0,
+                s1,
+                ident,
+                s2,
+                s3,
+                value,
+            },
+        }
+    }
+}
+
+fn suffix_field(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Suffix, Error = Error> {
+    space()
+        .then_ignore(just("["))
+        .then(space())
+        .then(expr)
+        .then(space())
+        .then_ignore(just("]"))
+        .map_with_span(|(((s0, s1), index), s2), span| Suffix::Field {
+            s0,
+            s1,
+            index: Box::new(index),
+            s2,
+            span,
+        })
+}
+
+fn suffixed(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> {
+    let suffix_field = suffix_field(expr.clone());
+
+    let suffix = suffix_field;
+
+    atom(expr)
+        .then(suffix.repeated())
+        .foldl(|expr, suffix| suffix.into_expr(expr))
+}
+
 fn expr(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
-    atom(expr)
+    suffixed(expr)
 }
 
 pub fn parser() -> impl Parser<char, Expr, Error = Error> {

@@ -402,7 +402,7 @@ impl HasSpan for Expr {
             Expr::Paren { span, .. } => *span,
             Expr::TableConstr(tcr) => tcr.span(),
             Expr::Var { span, .. } => *span,
-            Expr::VarIdent(_) => todo!(),
+            Expr::VarIdent(name) => name.span(),
             Expr::VarAssign { span, .. } => *span,
             Expr::VarIdentAssign { name, value, .. } => name.span().join(value.span()),
             Expr::Neg { minus, expr, .. } => minus.join(expr.span()),
