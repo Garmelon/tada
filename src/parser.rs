@@ -235,6 +235,22 @@ fn expr_var_assign(
         )
 }
 
+fn expr_var_ident_assign(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> {
+    ident()
+        .then(space())
+        .then_ignore(just("="))
+        .then(space())
+        .then(expr)
+        .map(|(((name, s0), s1), value)| Expr::VarIdentAssign {
+            name,
+            s0,
+            s1,
+            value: Box::new(value),
+        })
+}
+
 fn expr(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
@@ -243,8 +259,13 @@ fn expr(
     let var = expr_var(expr.clone());
     let var_ident = ident().map(Expr::VarIdent);
     let var_assign = expr_var_assign(expr.clone());
+    let var_ident_assign = expr_var_ident_assign(expr.clone());
 
-    lit.or(table_constr).or(var_assign).or(var).or(var_ident)
+    lit.or(table_constr)
+        .or(var_assign)
+        .or(var)
+        .or(var_ident_assign)
+        .or(var_ident)
 }
 
 pub fn parser() -> impl Parser<char, Expr, Error = Error> {
