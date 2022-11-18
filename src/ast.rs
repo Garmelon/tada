@@ -69,9 +69,9 @@ impl fmt::Debug for NumLitStr {
 /// before and after any digit.
 #[derive(Clone)]
 pub struct NumLit {
-    value: i64,
-    str: NumLitStr,
-    span: Span,
+    pub value: i64,
+    pub str: NumLitStr,
+    pub span: Span,
 }
 
 impl fmt::Debug for NumLit {
