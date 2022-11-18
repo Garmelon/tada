@@ -3,14 +3,24 @@ use std::fmt;
 use crate::span::{HasSpan, Span};
 
 #[derive(Clone)]
+pub enum Line {
+    Empty,
+    Comment(String),
+}
+
+#[derive(Clone)]
 pub struct Space {
-    pub comment: Vec<(String, Span)>,
+    pub lines: Vec<Line>,
     pub span: Span,
 }
 
 impl fmt::Debug for Space {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Space").finish()
+        if self.lines.iter().any(|l| matches!(l, Line::Comment(_))) {
+            write!(f, "space with comments")
+        } else {
+            write!(f, "space")
+        }
     }
 }
 
