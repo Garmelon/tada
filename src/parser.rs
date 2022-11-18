@@ -194,7 +194,15 @@ fn table_constr(
         })
 }
 
-pub fn parser() -> impl Parser<char, TableConstr, Error = Error> {
-    let expr = recursive(|expr| lit(expr).map(Expr::Lit));
-    table_constr(expr).padded().then_ignore(end())
+fn expr(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> {
+    let lit = lit(expr.clone()).map(Expr::Lit);
+    let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
+
+    lit.or(table_constr)
+}
+
+pub fn parser() -> impl Parser<char, Expr, Error = Error> {
+    recursive(expr).padded().then_ignore(end())
 }
