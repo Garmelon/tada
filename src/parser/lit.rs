@@ -3,8 +3,23 @@
 use chumsky::prelude::*;
 
 use crate::ast::{Expr, Lit, NumLit, NumLitStr, StringLit, TableLit, TableLitElem};
+use crate::builtin::Builtin;
 
 use super::basic::{ident, space, Error};
+
+fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> {
+    just('\'').ignore_then(choice((
+        text::keyword("get").to(Builtin::Get),
+        text::keyword("set").to(Builtin::Set),
+        text::keyword("getraw").to(Builtin::GetRaw),
+        text::keyword("setraw").to(Builtin::SetRaw),
+        text::keyword("getmeta").to(Builtin::GetMeta),
+        text::keyword("setmeta").to(Builtin::SetMeta),
+        text::keyword("scope").to(Builtin::Scope),
+        text::keyword("arg").to(Builtin::Arg),
+        text::keyword("destructure").to(Builtin::Destructure),
+    )))
+}
 
 fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = Error> + Clone {
     // Minimum amount of digits required to represent i64::MAX. The rest of this
@@ -119,9 +134,15 @@ pub fn lit(
     let nil = text::keyword("nil").map_with_span(|_, span| Lit::Nil(span));
     let r#true = text::keyword("true").map_with_span(|_, span| Lit::Bool(true, span));
     let r#false = text::keyword("false").map_with_span(|_, span| Lit::Bool(false, span));
+    let builtin = builtin_lit().map_with_span(Lit::Builtin);
     let num = num_lit().map(Lit::Num);
     let string = string_lit().map(Lit::String);
     let table = table_lit(expr).map(Lit::Table);
 
-    nil.or(r#true).or(r#false).or(num).or(string).or(table)
+    nil.or(r#true)
+        .or(r#false)
+        .or(builtin)
+        .or(num)
+        .or(string)
+        .or(table)
 }

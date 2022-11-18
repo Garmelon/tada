@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::builtin::Builtin;
 use crate::span::{HasSpan, Span};
 
 use super::basic::{Ident, Space};
@@ -127,6 +128,10 @@ pub enum Lit {
     /// - `false`
     Bool(bool, Span),
 
+    /// - `'get`
+    /// - `'destructure`
+    Builtin(Builtin, Span),
+
     /// See [`NumLit`].
     Num(NumLit),
 
@@ -142,6 +147,7 @@ impl fmt::Debug for Lit {
         match self {
             Self::Nil(_) => write!(f, "l#nil"),
             Self::Bool(b, _) => write!(f, "l#{b:?}"),
+            Self::Builtin(b, _) => write!(f, "l#{b:?}"),
             Self::Num(n) => write!(f, "l#{n:?}"),
             Self::String(s) => write!(f, "l#{s:?}"),
             Self::Table(t) => {
@@ -157,6 +163,7 @@ impl HasSpan for Lit {
         match self {
             Lit::Nil(span) => *span,
             Lit::Bool(_, span) => *span,
+            Lit::Builtin(_, span) => *span,
             Lit::Num(n) => n.span(),
             Lit::String(s) => s.span(),
             Lit::Table(t) => t.span(),
