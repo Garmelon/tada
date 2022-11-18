@@ -265,6 +265,16 @@ pub enum BinOp {
 pub enum Expr {
     Lit(Lit),
 
+    /// `(a)`
+    ///
+    /// Structure: `( s0 inner s1 )`
+    Paren {
+        s0: Space,
+        inner: Box<Expr>,
+        s1: Space,
+        span: Span,
+    },
+
     /// See [`TableConstr`].
     TableConstr(TableConstr),
 
@@ -389,6 +399,7 @@ impl HasSpan for Expr {
     fn span(&self) -> Span {
         match self {
             Expr::Lit(lit) => lit.span(),
+            Expr::Paren { span, .. } => *span,
             Expr::TableConstr(tcr) => tcr.span(),
             Expr::Var { span, .. } => *span,
             Expr::VarIdent(_) => todo!(),
