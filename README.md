@@ -41,3 +41,115 @@ One design principle of this language is to limit the scope of magic and rely
 mostly on syntactic sugar. This should also make understanding things you don't
 know yet easier: It is either syntactic sugar and can be applied, or it is magic
 with side effects limited to a local area, making it easy to find and look up.
+
+In the following sections,
+- `a`, `b`, ... are arbitrary expressions,
+- `foo`, `bar`, ... are identifiers, and
+- `{..}` represents an arbitrary list constructor.
+
+### Function calls
+
+| Sugar   | Desugared              |
+|---------|------------------------|
+| `a(b)`  | `'{ call: a, arg: b }` |
+| `a()`   | `a(nil)`               |
+| `a{..}` | `a({..})`              |
+
+### Field access
+
+| Sugar       | Desugared       |
+|-------------|-----------------|
+| `a[b]`      | `'get{a, b}`    |
+| `a[b] = c`  | `'set{a, b, c}` |
+| `a.foo`     | `a["foo"]`      |
+| `a.foo = b` | `a["foo"] = b`  |
+
+### Variable access
+
+| Sugar           | Desugared                 |
+|-----------------|---------------------------|
+| `[a]`           | `'scope()[a]`             |
+| `[a] = b`       | `'scope()[a] = b`         |
+| `local [a] = b` | `'setraw('scope(), a, b)` |
+| `foo`           | `["foo"]`                 |
+| `foo = a`       | `["foo"] = a`             |
+| `local foo = a` | `local ["foo"] = a`       |
+
+### Table constructors
+
+| Sugar              | Desugared                     |
+|--------------------|-------------------------------|
+| `{ a, b, foo: c }` | `'{ raw: '{ a, b, foo: c } }` |
+| `{ .., [a] = b }`  | `'set({..}, a, b)`            |
+
+### Table destructuring
+
+`{ a, b, foo: c } = d` is converted to
+```
+'{
+    local expr = 'arg()[0],
+    local scope = 'arg()[1],
+    scope.a = expr[0],
+    scope.b = expr[1],
+    scope.c = expr.foo,
+}{d, 'scope()}
+```
+which is approximately equal to
+```
+(function{expr, scope} '{
+    scope.a = expr[0],
+    scope.b = expr[1],
+    scope.c = expr.foo,
+}){d, 'scope()}
+```
+
+`local { a, b, foo: c } = d` is converted to
+```
+'{
+    local expr = 'arg()[0],
+    local scope = 'arg()[1],
+    'setraw(scope, "a", expr[0]),
+    'setraw(scope, "b", expr[1]),
+    'setraw(scope, "c", expr.foo),
+}{d, 'scope()}
+```
+which is approximately equal to
+```
+(function{expr, scope} '{
+    'setraw(scope, "a", expr[0]),
+    'setraw(scope, "b", expr[1]),
+    'setraw(scope, "c", expr.foo),
+}){d, 'scope()}
+```
+
+### Function definitions
+
+`function() a` is converted to
+```
+{
+    '{ quote: a },
+    scope: 'scope(),
+}
+```
+
+`function(foo) a` is converted to
+```
+function() '{
+    local foo = 'arg(),
+    a
+}
+```
+
+`function{..} a` is converted to
+```
+function() '{
+    local {..} = 'arg(),
+    a
+}
+```
+
+| Sugar                  | Desugared                       |
+|------------------------|---------------------------------|
+| `function foo() a`     | `foo = function() a`            |
+| `function foo(a) b`    | `foo = function(a) b`           |
+| `function foo{..} a`   | `foo = function{..} a`          |
