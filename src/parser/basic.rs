@@ -41,6 +41,14 @@ pub fn space() -> impl Parser<char, Space, Error = Error> {
 }
 
 pub fn ident() -> impl Parser<char, Ident, Error = Error> {
-    // TODO Forbid keywords
-    text::ident().map_with_span(|name, span| Ident { name, span })
+    text::ident().try_map(|name, span| {
+        if matches!(
+            &name as &str,
+            "nil" | "true" | "false" | "local" | "not" | "and" | "or"
+        ) {
+            Err(Simple::custom(span, "identifier uses reserved name"))
+        } else {
+            Ok(Ident { name, span })
+        }
+    })
 }
