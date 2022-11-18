@@ -194,7 +194,23 @@ fn table_constr(
         })
 }
 
-fn expr_var(
+fn atom_paren(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> {
+    just("(")
+        .ignore_then(space())
+        .then(expr)
+        .then(space())
+        .then_ignore(just(")"))
+        .map_with_span(|((s0, inner), s1), span| Expr::Paren {
+            s0,
+            inner: Box::new(inner),
+            s1,
+            span,
+        })
+}
+
+fn atom_var(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
     just("[")
@@ -210,7 +226,7 @@ fn expr_var(
         })
 }
 
-fn expr_var_assign(
+fn atom_var_assign(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
     just("[")
@@ -235,7 +251,7 @@ fn expr_var_assign(
         )
 }
 
-fn expr_var_ident_assign(
+fn atom_var_ident_assign(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
     ident()
@@ -251,21 +267,29 @@ fn expr_var_ident_assign(
         })
 }
 
-fn expr(
+fn atom(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
     let lit = lit(expr.clone()).map(Expr::Lit);
+    let paren = atom_paren(expr.clone());
     let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
-    let var = expr_var(expr.clone());
+    let var = atom_var(expr.clone());
     let var_ident = ident().map(Expr::VarIdent);
-    let var_assign = expr_var_assign(expr.clone());
-    let var_ident_assign = expr_var_ident_assign(expr.clone());
+    let var_assign = atom_var_assign(expr.clone());
+    let var_ident_assign = atom_var_ident_assign(expr);
 
-    lit.or(table_constr)
+    lit.or(paren)
+        .or(table_constr)
         .or(var_assign)
         .or(var)
         .or(var_ident_assign)
         .or(var_ident)
+}
+
+fn expr(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> {
+    atom(expr)
 }
 
 pub fn parser() -> impl Parser<char, Expr, Error = Error> {
