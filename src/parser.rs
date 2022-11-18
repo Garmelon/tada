@@ -210,14 +210,41 @@ fn expr_var(
         })
 }
 
+fn expr_var_assign(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> {
+    just("[")
+        .ignore_then(space())
+        .then(expr.clone())
+        .then(space())
+        .then_ignore(just("]"))
+        .then(space())
+        .then_ignore(just("="))
+        .then(space())
+        .then(expr)
+        .map_with_span(
+            |(((((s0, index), s1), s2), s3), value), span| Expr::VarAssign {
+                s0,
+                index: Box::new(index),
+                s1,
+                s2,
+                s3,
+                value: Box::new(value),
+                span,
+            },
+        )
+}
+
 fn expr(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
     let lit = lit(expr.clone()).map(Expr::Lit);
     let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
+    let var = expr_var(expr.clone());
     let var_ident = ident().map(Expr::VarIdent);
+    let var_assign = expr_var_assign(expr.clone());
 
-    lit.or(table_constr).or(expr_var(expr)).or(var_ident)
+    lit.or(table_constr).or(var_assign).or(var).or(var_ident)
 }
 
 pub fn parser() -> impl Parser<char, Expr, Error = Error> {
