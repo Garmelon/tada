@@ -84,42 +84,23 @@ In the following sections,
 
 ### Table destructuring
 
-`{ a, b, foo: c } = d` is converted to
+`{ foo, bar: baz } = a` is converted to
 ```
-'{
-    local expr = 'arg()[0],
-    local scope = 'arg()[1],
-    scope.a = expr[0],
-    scope.b = expr[1],
-    scope.c = expr.foo,
-}{d, 'scope()}
-```
-which is approximately equal to
-```
-(function{expr, scope} '{
-    scope.a = expr[0],
-    scope.b = expr[1],
-    scope.c = expr.foo,
-}){d, 'scope()}
+'destructure{
+    'scope(),
+    { "foo", bar: "baz" },
+    a,
+}
 ```
 
-`local { a, b, foo: c } = d` is converted to
+`local { foo, bar: baz } = a` is converted to
 ```
-'{
-    local expr = 'arg()[0],
-    local scope = 'arg()[1],
-    'setraw(scope, "a", expr[0]),
-    'setraw(scope, "b", expr[1]),
-    'setraw(scope, "c", expr.foo),
-}{d, 'scope()}
-```
-which is approximately equal to
-```
-(function{expr, scope} '{
-    'setraw(scope, "a", expr[0]),
-    'setraw(scope, "b", expr[1]),
-    'setraw(scope, "c", expr.foo),
-}){d, 'scope()}
+'destructure{
+    'scope(),
+    { "foo", bar: "baz" },
+    a,
+    local: true,
+}
 ```
 
 ### Function definitions
