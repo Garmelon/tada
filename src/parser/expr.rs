@@ -8,6 +8,7 @@ use super::basic::{space, Error};
 use super::lit::lit;
 use super::suffix::suffixed;
 use super::table_constr::table_constr;
+use super::table_destr::table_destr;
 use super::var::var;
 
 fn atom_paren(
@@ -30,11 +31,12 @@ fn atom(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
     let lit = lit(expr.clone()).map(Expr::Lit);
-    let paren = atom_paren(expr.clone());
+    let var = var(expr.clone()).map(Expr::Var);
     let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
-    let var = var(expr).map(Expr::Var);
+    let table_destr = table_destr(expr.clone()).map(Expr::TableDestr);
+    let paren = atom_paren(expr);
 
-    lit.or(paren).or(table_constr).or(var)
+    lit.or(paren).or(table_destr).or(table_constr).or(var)
 }
 
 pub fn expr(

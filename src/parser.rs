@@ -3,6 +3,7 @@ mod expr;
 mod lit;
 mod suffix;
 mod table_constr;
+mod table_destr;
 mod var;
 
 use chumsky::prelude::*;
