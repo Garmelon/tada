@@ -31,13 +31,13 @@ pub fn table_pattern() -> impl Parser<char, TablePattern, Error = Error> {
         .then(space())
         .map(|((s0, elem), s1)| (s0, elem, s1));
 
-    let trailing_comma = just(",").ignore_then(space()).or_not();
+    let trailing_comma = just(',').ignore_then(space()).or_not();
 
-    let elems = elem.separated_by(just(",")).then(trailing_comma);
+    let elems = elem.separated_by(just(',')).then(trailing_comma);
 
-    just("{")
+    just('{')
         .ignore_then(elems)
-        .then_ignore(just("}"))
+        .then_ignore(just('}'))
         .map_with_span(|(elems, trailing_comma), span| TablePattern {
             elems,
             trailing_comma,

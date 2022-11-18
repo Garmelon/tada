@@ -14,11 +14,11 @@ use super::var::var;
 fn atom_paren(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
-    just("(")
+    just('(')
         .ignore_then(space())
         .then(expr)
         .then(space())
-        .then_ignore(just(")"))
+        .then_ignore(just(')'))
         .map_with_span(|((s0, inner), s1), span| Expr::Paren {
             s0,
             inner: Box::new(inner),

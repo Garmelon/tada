@@ -136,11 +136,11 @@ fn suffix_field_access(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Suffix, Error = Error> {
     space()
-        .then_ignore(just("["))
+        .then_ignore(just('['))
         .then(space())
         .then(expr)
         .then(space())
-        .then_ignore(just("]"))
+        .then_ignore(just(']'))
         .map(|(((s0, s1), index), s2)| Suffix::FieldAccess {
             s0,
             s1,
