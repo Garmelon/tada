@@ -105,7 +105,7 @@ fn table_lit_elem(
             value: Box::new(value),
         });
 
-    positional.or(named)
+    named.or(positional)
 }
 
 fn table_lit(
@@ -169,7 +169,7 @@ fn table_constr_elem(
             },
         );
 
-    lit.or(indexed)
+    indexed.or(lit)
 }
 
 fn table_constr(
@@ -215,8 +215,9 @@ fn expr(
 ) -> impl Parser<char, Expr, Error = Error> {
     let lit = lit(expr.clone()).map(Expr::Lit);
     let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
+    let var_ident = ident().map(Expr::VarIdent);
 
-    lit.or(table_constr).or(expr_var(expr))
+    lit.or(table_constr).or(expr_var(expr)).or(var_ident)
 }
 
 pub fn parser() -> impl Parser<char, Expr, Error = Error> {
