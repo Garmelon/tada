@@ -6,7 +6,7 @@ use clap::Parser;
 
 mod ast;
 mod builtin;
-// mod parser;
+mod parser;
 mod span;
 mod table;
 mod value;
@@ -29,15 +29,16 @@ fn main() -> anyhow::Result<()> {
     match args.command {
         Command::Parse { file } => {
             let content = fs::read_to_string(&file)?;
-            // match parser::parser().parse(&content as &str) {
-            //     Ok(lit) => println!("Successful parse: {lit:#?}"),
-            //     Err(errs) => {
-            //         println!("Parsing failed");
-            //         for err in errs {
-            //             println!("{err:?}");
-            //         }
-            //     }
-            // }
+            let stream = span::stream_from_str(&content);
+            match parser::parser().parse(stream) {
+                Ok(lit) => println!("Successful parse: {lit:#?}"),
+                Err(errs) => {
+                    println!("Parsing failed");
+                    for err in errs {
+                        println!("{err:?}");
+                    }
+                }
+            }
         }
     }
 
