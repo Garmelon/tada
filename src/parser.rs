@@ -21,6 +21,7 @@ fn space() -> impl Parser<char, Space, Error = Error> {
 }
 
 fn ident() -> impl Parser<char, Ident, Error = Error> {
+    // TODO Forbid keywords
     text::ident().map_with_span(|name, span| Ident { name, span })
 }
 
