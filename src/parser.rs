@@ -194,13 +194,29 @@ fn table_constr(
         })
 }
 
+fn expr_var(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> {
+    just("[")
+        .ignore_then(space())
+        .then(expr)
+        .then(space())
+        .then_ignore(just("]"))
+        .map_with_span(|((s0, index), s1), span| Expr::Var {
+            s0,
+            index: Box::new(index),
+            s1,
+            span,
+        })
+}
+
 fn expr(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
     let lit = lit(expr.clone()).map(Expr::Lit);
     let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
 
-    lit.or(table_constr)
+    lit.or(table_constr).or(expr_var(expr))
 }
 
 pub fn parser() -> impl Parser<char, Expr, Error = Error> {
