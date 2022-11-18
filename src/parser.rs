@@ -1,7 +1,10 @@
 use chumsky::prelude::*;
 use chumsky::text::Character;
 
-use crate::ast::{Expr, Ident, Lit, NumLit, NumLitStr, Space, StringLit, TableLit, TableLitElem};
+use crate::ast::{
+    Expr, Ident, Lit, NumLit, NumLitStr, Space, StringLit, TableConstr, TableConstrElem, TableLit,
+    TableLitElem,
+};
 use crate::span::Span;
 
 type Error = Simple<char, Span>;
@@ -140,8 +143,58 @@ fn lit(
     nil.or(r#true).or(r#false).or(num).or(string).or(table)
 }
 
-pub fn parser() -> impl Parser<char, Expr, Error = Error> {
-    recursive(|expr| lit(expr).map(Expr::Lit))
-        .padded()
-        .then_ignore(end())
+fn table_constr_elem(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, TableConstrElem, Error = Error> {
+    let lit = table_lit_elem(expr.clone()).map(TableConstrElem::Lit);
+
+    let indexed = just("[")
+        .ignore_then(space())
+        .then(expr.clone())
+        .then(space())
+        .then_ignore(just("]"))
+        .then(space())
+        .then_ignore(just(":"))
+        .then(space())
+        .then(expr)
+        .map_with_span(
+            |(((((s0, index), s1), s2), s3), value), span| TableConstrElem::Indexed {
+                s0,
+                index: Box::new(index),
+                s1,
+                s2,
+                s3,
+                value: Box::new(value),
+                span,
+            },
+        );
+
+    lit.or(indexed)
+}
+
+fn table_constr(
+    expr: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, TableConstr, Error = Error> {
+    let elem = space()
+        .then(table_constr_elem(expr))
+        .then(space())
+        .map(|((s0, elem), s1)| (s0, elem, s1));
+
+    let trailing_comma = just(",").ignore_then(space()).or_not();
+
+    let elems = elem.separated_by(just(",")).then(trailing_comma);
+
+    just("{")
+        .ignore_then(elems)
+        .then_ignore(just("}"))
+        .map_with_span(|(elems, trailing_comma), span| TableConstr {
+            elems,
+            trailing_comma,
+            span,
+        })
+}
+
+pub fn parser() -> impl Parser<char, TableConstr, Error = Error> {
+    let expr = recursive(|expr| lit(expr).map(Expr::Lit));
+    table_constr(expr).padded().then_ignore(end())
 }
