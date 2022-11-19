@@ -6,7 +6,7 @@ use super::{Expr, Space, TableConstr};
 pub enum Call {
     /// `a(b)`
     ///
-    /// Structure: `expr s0 ( s1 arg s2)
+    /// Structure: `expr s0 ( s1 arg s2 )`
     Arg {
         expr: Box<Expr>,
         s0: Space,
