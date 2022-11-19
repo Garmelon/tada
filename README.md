@@ -129,8 +129,11 @@ function() '{
 }
 ```
 
-| Sugar                  | Desugared                       |
-|------------------------|---------------------------------|
-| `function foo() a`     | `foo = function() a`            |
-| `function foo(a) b`    | `foo = function(a) b`           |
-| `function foo{..} a`   | `foo = function{..} a`          |
+| Sugar                      | Desugared                    |
+|----------------------------|------------------------------|
+| `function foo() a`         | `foo = function() a`         |
+| `function foo(a) b`        | `foo = function(a) b`        |
+| `function foo{..} a`       | `foo = function{..} a`       |
+| `local function foo() a`   | `local foo = function() a`   |
+| `local function foo(a) b`  | `local foo = function(a) b`  |
+| `local function foo{..} a` | `local foo = function{..} a` |

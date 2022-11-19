@@ -39,10 +39,12 @@ pub enum FuncDef {
         span: Span,
     },
 
-    /// `function foo() a`
+    /// - `function foo() a`
+    /// - `local function foo() a`
     ///
-    /// Structure: `function s0 name s1 ( s2 ) s3 body`
+    /// Structure: `local function s0 name s1 ( s2 ) s3 body`
     NamedNoArg {
+        local: Option<Space>,
         s0: Space,
         name: Ident,
         s1: Space,
@@ -52,10 +54,12 @@ pub enum FuncDef {
         span: Span,
     },
 
-    /// `function foo(bar) a`
+    /// - `function foo(bar) a`
+    /// - `local function foo(bar) a`
     ///
-    /// Structure: `function s0 name s1 ( s2 arg s3 ) s4 body`
+    /// Structure: `local function s0 name s1 ( s2 arg s3 ) s4 body`
     NamedArg {
+        local: Option<Space>,
         s0: Space,
         name: Ident,
         s1: Space,
@@ -68,9 +72,11 @@ pub enum FuncDef {
     },
 
     /// `function foo{..} a`
+    /// `local function foo{..} a`
     ///
-    /// Structure: `function s0 name s1 pattern s2 body`
+    /// Structure: `local function s0 name s1 pattern s2 body`
     NamedDestr {
+        local: Option<Space>,
         s0: Space,
         name: Ident,
         s1: Space,
