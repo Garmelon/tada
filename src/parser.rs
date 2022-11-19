@@ -9,6 +9,7 @@
 
 mod basic;
 mod expr;
+mod func_defs;
 mod lit;
 mod prefix;
 mod suffix;

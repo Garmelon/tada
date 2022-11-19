@@ -6,6 +6,7 @@ use crate::ast::{BinOp, Expr};
 use crate::span::HasSpan;
 
 use super::basic::{space, Error};
+use super::func_defs::func_def;
 use super::lit::lit;
 use super::prefix::prefixed;
 use super::suffix::suffixed;
@@ -36,9 +37,16 @@ fn atom(
     let var = var(expr.clone()).map(Expr::Var);
     let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
     let table_destr = table_destr(expr.clone()).map(Expr::TableDestr);
+    let func_def = func_def(expr.clone()).map(Expr::FuncDef);
     let paren = atom_paren(expr.clone());
 
-    let base = lit.or(paren).or(table_destr).or(table_constr).or(var);
+    let base = lit
+        .or(paren)
+        .or(table_destr)
+        .or(table_constr)
+        .or(func_def)
+        .or(var);
+
     prefixed(suffixed(base, expr))
 }
 

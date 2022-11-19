@@ -46,7 +46,7 @@ pub fn ident() -> BoxedParser<'static, char, Ident, Error> {
         .try_map(|name, span| {
             if matches!(
                 &name as &str,
-                "nil" | "true" | "false" | "local" | "not" | "and" | "or"
+                "nil" | "true" | "false" | "local" | "function" | "not" | "and" | "or"
             ) {
                 Err(Simple::custom(span, "identifier uses reserved name"))
             } else {
