@@ -64,19 +64,44 @@ fn left_assoc(
         .boxed()
 }
 
+fn right_assoc(
+    op: impl Parser<char, BinOp, Error = Error> + Clone + 'static,
+    over: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, Expr, Error> {
+    let over_op = over
+        .clone()
+        .then(space())
+        .then(op)
+        .then(space())
+        .map(|(((left, s0), op), s1)| (left, s0, op, s1));
+
+    over_op
+        .repeated()
+        .then(over)
+        .foldr(|(left, s0, op, s1), right| Expr::BinOp {
+            span: left.span().join(right.span()),
+            left: Box::new(left),
+            s0,
+            op,
+            s1,
+            right: Box::new(right),
+        })
+        .boxed()
+}
+
 pub fn expr(
     expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> BoxedParser<'static, char, Expr, Error> {
     // * / %
-    let prec0 = (just('*').to(BinOp::Mul))
+    let op_prec_4 = (just('*').to(BinOp::Mul))
         .or(just('/').to(BinOp::Div))
         .or(just('%').to(BinOp::Mod));
 
     // + -
-    let prec1 = (just('+').to(BinOp::Add)).or(just('-').to(BinOp::Sub));
+    let op_prec_3 = (just('+').to(BinOp::Add)).or(just('-').to(BinOp::Sub));
 
     // == != > >= < <=
-    let prec2 = (just("==").to(BinOp::Eq))
+    let op_prec_2 = (just("==").to(BinOp::Eq))
         .or(just("!=").to(BinOp::Neq))
         .or(just('>').to(BinOp::Gt))
         .or(just(">=").to(BinOp::Ge))
@@ -84,16 +109,19 @@ pub fn expr(
         .or(just("<=").to(BinOp::Le));
 
     // and
-    let prec3 = text::keyword("and").to(BinOp::And);
+    let op_prec_1 = text::keyword("and").to(BinOp::And);
 
     // or
-    let prec4 = text::keyword("or").to(BinOp::Or);
+    let op_prec_0 = text::keyword("or").to(BinOp::Or);
 
-    left_assoc(
-        prec4,
-        left_assoc(
-            prec3,
-            left_assoc(prec2, left_assoc(prec1, left_assoc(prec0, atom(expr)))),
+    right_assoc(
+        op_prec_0,
+        right_assoc(
+            op_prec_1,
+            left_assoc(
+                op_prec_2,
+                left_assoc(op_prec_3, left_assoc(op_prec_4, atom(expr))),
+            ),
         ),
     )
 }
