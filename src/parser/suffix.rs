@@ -156,7 +156,7 @@ fn suffix_call_no_arg() -> impl Parser<char, Suffix, Error = Error> + Clone {
 }
 
 fn suffix_call_constr(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> impl Parser<char, Suffix, Error = Error> + Clone {
     space()
         .then(table_constr(expr))
@@ -238,9 +238,9 @@ fn suffix_field_assign_ident(
 }
 
 pub fn suffixed(
-    atom: impl Parser<char, Expr, Error = Error> + Clone,
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Expr, Error = Error> + Clone {
+    atom: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, Expr, Error> {
     let call_arg = suffix_call_arg(expr.clone());
     let call_no_arg = suffix_call_no_arg();
     let call_constr = suffix_call_constr(expr.clone());
@@ -260,4 +260,5 @@ pub fn suffixed(
 
     atom.then(suffix.repeated())
         .foldl(|expr, (suffix, span)| suffix.into_expr(expr.span().join(span), expr))
+        .boxed()
 }

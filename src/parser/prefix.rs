@@ -50,8 +50,8 @@ fn prefix_not() -> impl Parser<char, Prefix, Error = Error> + Clone {
 }
 
 pub fn prefixed(
-    suffixed: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Expr, Error = Error> + Clone {
+    suffixed: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, Expr, Error> {
     let prefix = prefix_neg()
         .or(prefix_not())
         .map_with_span(|prefix, span| (prefix, span));
@@ -60,4 +60,5 @@ pub fn prefixed(
         .repeated()
         .then(suffixed)
         .foldr(|(prefix, span), expr| prefix.into_expr(expr.span().join(span), expr))
+        .boxed()
 }

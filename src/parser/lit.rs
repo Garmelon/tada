@@ -71,21 +71,21 @@ fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = 
         })
 }
 
-pub fn num_lit() -> impl Parser<char, NumLit, Error = Error> + Clone {
+fn num_lit() -> impl Parser<char, NumLit, Error = Error> + Clone {
     (just("0b").ignore_then(num_lit_str_radix(2)))
         .or(just("0x").ignore_then(num_lit_str_radix(16)))
         .or(num_lit_str_radix(10))
         .map_with_span(|(value, str), span| NumLit { value, str, span })
 }
 
-pub fn string_lit() -> impl Parser<char, StringLit, Error = Error> + Clone {
+fn string_lit() -> impl Parser<char, StringLit, Error = Error> + Clone {
     // TODO Parse string literals
     filter(|_| false).map(|_| unreachable!())
 }
 
 pub fn table_lit_elem(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, TableLitElem, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, TableLitElem, Error> {
     let positional = expr
         .clone()
         .map(|value| TableLitElem::Positional(Box::new(value)));
@@ -103,11 +103,11 @@ pub fn table_lit_elem(
             span,
         });
 
-    named.or(positional)
+    named.or(positional).boxed()
 }
 
-pub fn table_lit(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
+fn table_lit(
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> impl Parser<char, TableLit, Error = Error> + Clone {
     let elem = space()
         .then(table_lit_elem(expr))
@@ -129,8 +129,8 @@ pub fn table_lit(
 }
 
 pub fn lit(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Lit, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, Lit, Error> {
     let nil = text::keyword("nil").map_with_span(|_, span| Lit::Nil(span));
     let r#true = text::keyword("true").map_with_span(|_, span| Lit::Bool(true, span));
     let r#false = text::keyword("false").map_with_span(|_, span| Lit::Bool(false, span));
@@ -145,4 +145,5 @@ pub fn lit(
         .or(num)
         .or(string)
         .or(table)
+        .boxed()
 }

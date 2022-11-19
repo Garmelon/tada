@@ -7,8 +7,8 @@ use crate::ast::{Expr, TableConstr, TableConstrElem};
 use super::basic::{space, Error};
 use super::lit::table_lit_elem;
 
-pub fn table_constr_elem(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
+fn table_constr_elem(
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> impl Parser<char, TableConstrElem, Error = Error> + Clone {
     let lit = table_lit_elem(expr.clone()).map(TableConstrElem::Lit);
 
@@ -37,8 +37,8 @@ pub fn table_constr_elem(
 }
 
 pub fn table_constr(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, TableConstr, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, TableConstr, Error> {
     let elem = space()
         .then(table_constr_elem(expr))
         .then(space())
@@ -56,4 +56,5 @@ pub fn table_constr(
             trailing_comma,
             span,
         })
+        .boxed()
 }

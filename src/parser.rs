@@ -1,3 +1,10 @@
+//! Parse the ast over at [`crate::ast`].
+//!
+//! Rules of thumb:
+//! - Everything `pub` should return a [`BoxedParser`].
+//! - Everything not used outside a module should not be `pub`. It can always be
+//!   made public later.
+
 // TODO Turn multiple calls to subparsers into clone-s
 
 mod basic;

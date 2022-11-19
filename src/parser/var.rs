@@ -75,12 +75,12 @@ fn var_assign_ident(
 }
 
 pub fn var(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, Var, Error> {
     let access = var_access(expr.clone());
     let assign = var_assign(expr.clone());
     let access_ident = ident().map(Var::AccessIdent);
     let assign_ident = var_assign_ident(expr);
 
-    assign.or(access).or(assign_ident).or(access_ident)
+    assign.or(access).or(assign_ident).or(access_ident).boxed()
 }

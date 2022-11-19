@@ -10,17 +10,17 @@ pub type Error = Simple<char, Span>;
 
 // TODO https://github.com/rust-lang/rust/issues/63063
 
-pub fn inline() -> impl Parser<char, (), Error = Error> + Clone {
+fn inline() -> impl Parser<char, (), Error = Error> + Clone {
     filter(|c: &char| c.is_whitespace() && *c != '\n')
         .repeated()
         .to(())
 }
 
-pub fn newline() -> impl Parser<char, (), Error = Error> + Clone {
+fn newline() -> impl Parser<char, (), Error = Error> + Clone {
     just('\n').to(())
 }
 
-pub fn line() -> impl Parser<char, Line, Error = Error> + Clone {
+fn line() -> impl Parser<char, Line, Error = Error> + Clone {
     let empty = newline().to(Line::Empty);
 
     let comment = just('#')
@@ -32,23 +32,26 @@ pub fn line() -> impl Parser<char, Line, Error = Error> + Clone {
     empty.or(comment)
 }
 
-pub fn space() -> impl Parser<char, Space, Error = Error> + Clone {
+pub fn space() -> BoxedParser<'static, char, Space, Error> {
     inline()
         .ignore_then(line())
         .repeated()
         .then_ignore(inline())
         .map_with_span(|lines, span| Space { lines, span })
+        .boxed()
 }
 
-pub fn ident() -> impl Parser<char, Ident, Error = Error> + Clone {
-    text::ident().try_map(|name, span| {
-        if matches!(
-            &name as &str,
-            "nil" | "true" | "false" | "local" | "not" | "and" | "or"
-        ) {
-            Err(Simple::custom(span, "identifier uses reserved name"))
-        } else {
-            Ok(Ident { name, span })
-        }
-    })
+pub fn ident() -> BoxedParser<'static, char, Ident, Error> {
+    text::ident()
+        .try_map(|name, span| {
+            if matches!(
+                &name as &str,
+                "nil" | "true" | "false" | "local" | "not" | "and" | "or"
+            ) {
+                Err(Simple::custom(span, "identifier uses reserved name"))
+            } else {
+                Ok(Ident { name, span })
+            }
+        })
+        .boxed()
 }

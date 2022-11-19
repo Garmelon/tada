@@ -30,7 +30,7 @@ fn atom_paren(
 }
 
 fn atom(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> impl Parser<char, Expr, Error = Error> + Clone {
     let lit = lit(expr.clone()).map(Expr::Lit);
     let var = var(expr.clone()).map(Expr::Var);
@@ -43,9 +43,9 @@ fn atom(
 }
 
 fn left_assoc(
-    op: impl Parser<char, BinOp, Error = Error> + Clone,
-    over: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Expr, Error = Error> + Clone {
+    op: impl Parser<char, BinOp, Error = Error> + Clone + 'static,
+    over: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, Expr, Error> {
     let op_over = space()
         .then(op)
         .then(space())
@@ -61,11 +61,12 @@ fn left_assoc(
             s1,
             right: Box::new(right),
         })
+        .boxed()
 }
 
 pub fn expr(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Expr, Error = Error> {
+    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+) -> BoxedParser<'static, char, Expr, Error> {
     // * / %
     let prec0 = (just('*').to(BinOp::Mul))
         .or(just('/').to(BinOp::Div))
