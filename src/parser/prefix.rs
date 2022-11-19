@@ -35,14 +35,14 @@ impl Prefix {
     }
 }
 
-fn prefix_neg() -> impl Parser<char, Prefix, Error = Error> {
+fn prefix_neg() -> impl Parser<char, Prefix, Error = Error> + Clone {
     just('-')
         .map_with_span(|_, span| span)
         .then(space())
         .map(|(minus, s0)| Prefix::Neg { minus, s0 })
 }
 
-fn prefix_not() -> impl Parser<char, Prefix, Error = Error> {
+fn prefix_not() -> impl Parser<char, Prefix, Error = Error> + Clone {
     text::keyword("not")
         .map_with_span(|_, span| span)
         .then(space())
@@ -50,8 +50,8 @@ fn prefix_not() -> impl Parser<char, Prefix, Error = Error> {
 }
 
 pub fn prefixed(
-    suffixed: impl Parser<char, Expr, Error = Error>,
-) -> impl Parser<char, Expr, Error = Error> {
+    suffixed: impl Parser<char, Expr, Error = Error> + Clone,
+) -> impl Parser<char, Expr, Error = Error> + Clone {
     let prefix = prefix_neg()
         .or(prefix_not())
         .map_with_span(|prefix, span| (prefix, span));

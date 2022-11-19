@@ -7,7 +7,7 @@ use crate::builtin::Builtin;
 
 use super::basic::{ident, space, Error};
 
-fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> {
+fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> + Clone {
     just('\'').ignore_then(choice((
         text::keyword("get").to(Builtin::Get),
         text::keyword("set").to(Builtin::Set),
@@ -78,14 +78,14 @@ pub fn num_lit() -> impl Parser<char, NumLit, Error = Error> + Clone {
         .map_with_span(|(value, str), span| NumLit { value, str, span })
 }
 
-pub fn string_lit() -> impl Parser<char, StringLit, Error = Error> {
+pub fn string_lit() -> impl Parser<char, StringLit, Error = Error> + Clone {
     // TODO Parse string literals
     filter(|_| false).map(|_| unreachable!())
 }
 
 pub fn table_lit_elem(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, TableLitElem, Error = Error> {
+) -> impl Parser<char, TableLitElem, Error = Error> + Clone {
     let positional = expr
         .clone()
         .map(|value| TableLitElem::Positional(Box::new(value)));
@@ -108,7 +108,7 @@ pub fn table_lit_elem(
 
 pub fn table_lit(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, TableLit, Error = Error> {
+) -> impl Parser<char, TableLit, Error = Error> + Clone {
     let elem = space()
         .then(table_lit_elem(expr))
         .then(space())
@@ -130,7 +130,7 @@ pub fn table_lit(
 
 pub fn lit(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Lit, Error = Error> {
+) -> impl Parser<char, Lit, Error = Error> + Clone {
     let nil = text::keyword("nil").map_with_span(|_, span| Lit::Nil(span));
     let r#true = text::keyword("true").map_with_span(|_, span| Lit::Bool(true, span));
     let r#false = text::keyword("false").map_with_span(|_, span| Lit::Bool(false, span));

@@ -10,17 +10,17 @@ pub type Error = Simple<char, Span>;
 
 // TODO https://github.com/rust-lang/rust/issues/63063
 
-pub fn inline() -> impl Parser<char, (), Error = Error> {
+pub fn inline() -> impl Parser<char, (), Error = Error> + Clone {
     filter(|c: &char| c.is_whitespace() && *c != '\n')
         .repeated()
         .to(())
 }
 
-pub fn newline() -> impl Parser<char, (), Error = Error> {
+pub fn newline() -> impl Parser<char, (), Error = Error> + Clone {
     just('\n').to(())
 }
 
-pub fn line() -> impl Parser<char, Line, Error = Error> {
+pub fn line() -> impl Parser<char, Line, Error = Error> + Clone {
     let empty = newline().to(Line::Empty);
 
     let comment = just('#')
@@ -32,7 +32,7 @@ pub fn line() -> impl Parser<char, Line, Error = Error> {
     empty.or(comment)
 }
 
-pub fn space() -> impl Parser<char, Space, Error = Error> {
+pub fn space() -> impl Parser<char, Space, Error = Error> + Clone {
     inline()
         .ignore_then(line())
         .repeated()
@@ -40,7 +40,7 @@ pub fn space() -> impl Parser<char, Space, Error = Error> {
         .map_with_span(|lines, span| Space { lines, span })
 }
 
-pub fn ident() -> impl Parser<char, Ident, Error = Error> {
+pub fn ident() -> impl Parser<char, Ident, Error = Error> + Clone {
     text::ident().try_map(|name, span| {
         if matches!(
             &name as &str,

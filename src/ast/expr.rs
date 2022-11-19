@@ -20,6 +20,14 @@ pub enum BinOp {
     Eq,
     /// `!=`
     Neq,
+    /// `>`
+    Gt,
+    /// `>=`
+    Ge,
+    /// `<`
+    Lt,
+    /// `<=`
+    Le,
     /// `and`
     And,
     /// `or`

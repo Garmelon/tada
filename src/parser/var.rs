@@ -8,7 +8,7 @@ use super::basic::{ident, space, Error};
 
 fn var_access(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> {
+) -> impl Parser<char, Var, Error = Error> + Clone {
     just('[')
         .ignore_then(space())
         .then(expr)
@@ -24,7 +24,7 @@ fn var_access(
 
 fn var_assign(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> {
+) -> impl Parser<char, Var, Error = Error> + Clone {
     let local = text::keyword("local").ignore_then(space()).or_not();
 
     local
@@ -53,7 +53,7 @@ fn var_assign(
 
 fn var_assign_ident(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> {
+) -> impl Parser<char, Var, Error = Error> + Clone {
     let local = text::keyword("local").ignore_then(space()).or_not();
 
     local
@@ -76,7 +76,7 @@ fn var_assign_ident(
 
 pub fn var(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> {
+) -> impl Parser<char, Var, Error = Error> + Clone {
     let access = var_access(expr.clone());
     let assign = var_assign(expr.clone());
     let access_ident = ident().map(Var::AccessIdent);
