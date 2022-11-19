@@ -1,6 +1,7 @@
 mod basic;
 mod expr;
 mod lit;
+mod prefix;
 mod suffix;
 mod table_constr;
 mod table_destr;

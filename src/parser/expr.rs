@@ -6,6 +6,7 @@ use crate::ast::Expr;
 
 use super::basic::{space, Error};
 use super::lit::lit;
+use super::prefix::prefixed;
 use super::suffix::suffixed;
 use super::table_constr::table_constr;
 use super::table_destr::table_destr;
@@ -34,13 +35,14 @@ fn atom(
     let var = var(expr.clone()).map(Expr::Var);
     let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
     let table_destr = table_destr(expr.clone()).map(Expr::TableDestr);
-    let paren = atom_paren(expr);
+    let paren = atom_paren(expr.clone());
 
-    lit.or(paren).or(table_destr).or(table_constr).or(var)
+    let base = lit.or(paren).or(table_destr).or(table_constr).or(var);
+    prefixed(suffixed(base, expr))
 }
 
 pub fn expr(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Expr, Error = Error> {
-    suffixed(atom(expr.clone()), expr)
+    atom(expr)
 }
