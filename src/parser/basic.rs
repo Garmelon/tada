@@ -55,3 +55,7 @@ pub fn ident() -> BoxedParser<'static, char, Ident, Error> {
         })
         .boxed()
 }
+
+pub fn local() -> BoxedParser<'static, char, Option<Space>, Error> {
+    text::keyword("local").ignore_then(space()).or_not().boxed()
+}

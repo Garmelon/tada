@@ -4,7 +4,7 @@ use chumsky::prelude::*;
 
 use crate::ast::{Expr, Var};
 
-use super::basic::{ident, space, Error};
+use super::basic::{ident, local, space, Error};
 
 fn var_access(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
@@ -25,9 +25,7 @@ fn var_access(
 fn var_assign(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Var, Error = Error> + Clone {
-    let local = text::keyword("local").ignore_then(space()).or_not();
-
-    local
+    local()
         .then_ignore(just('['))
         .then(space())
         .then(expr.clone())
@@ -54,9 +52,7 @@ fn var_assign(
 fn var_assign_ident(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
 ) -> impl Parser<char, Var, Error = Error> + Clone {
-    let local = text::keyword("local").ignore_then(space()).or_not();
-
-    local
+    local()
         .then(ident())
         .then(space())
         .then_ignore(just('='))
