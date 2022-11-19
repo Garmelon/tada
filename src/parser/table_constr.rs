@@ -9,7 +9,7 @@ use super::lit::table_lit_elem;
 
 fn table_constr_elem(
     expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> impl Parser<char, TableConstrElem, Error = Error> + Clone {
+) -> impl Parser<char, TableConstrElem, Error = Error> {
     let lit = table_lit_elem(expr.clone()).map(TableConstrElem::Lit);
 
     let indexed = just('[')

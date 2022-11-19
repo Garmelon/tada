@@ -7,8 +7,8 @@ use crate::ast::{Expr, Var};
 use super::basic::{ident, local, space, Error};
 
 fn var_access(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error>,
+) -> impl Parser<char, Var, Error = Error> {
     just('[')
         .ignore_then(space())
         .then(expr)
@@ -24,7 +24,7 @@ fn var_access(
 
 fn var_assign(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> + Clone {
+) -> impl Parser<char, Var, Error = Error> {
     local()
         .then_ignore(just('['))
         .then(space())
@@ -50,8 +50,8 @@ fn var_assign(
 }
 
 fn var_assign_ident(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Var, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error>,
+) -> impl Parser<char, Var, Error = Error> {
     local()
         .then(ident())
         .then(space())

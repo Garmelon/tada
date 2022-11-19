@@ -6,7 +6,6 @@
 //!   made public later.
 
 // TODO Turn multiple calls to subparsers into clone-s
-// TODO Remove unnecessary +Clone-s and 'static-s
 
 mod basic;
 mod expr;

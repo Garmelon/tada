@@ -6,7 +6,7 @@ use crate::ast::{Expr, TableDestr, TablePattern, TablePatternElem};
 
 use super::basic::{ident, space, Error};
 
-fn table_pattern_elem() -> impl Parser<char, TablePatternElem, Error = Error> + Clone {
+fn table_pattern_elem() -> impl Parser<char, TablePatternElem, Error = Error> {
     let positional = ident().map(TablePatternElem::Positional);
 
     let named = ident()
@@ -47,7 +47,7 @@ pub fn table_pattern() -> BoxedParser<'static, char, TablePattern, Error> {
 }
 
 pub fn table_destr(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+    expr: impl Parser<char, Expr, Error = Error> + 'static,
 ) -> BoxedParser<'static, char, TableDestr, Error> {
     let local = text::keyword("local").ignore_then(space()).or_not();
 

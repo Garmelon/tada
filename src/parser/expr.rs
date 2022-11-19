@@ -51,7 +51,7 @@ fn atom(
 }
 
 fn left_assoc(
-    op: impl Parser<char, BinOp, Error = Error> + Clone + 'static,
+    op: impl Parser<char, BinOp, Error = Error> + 'static,
     over: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> BoxedParser<'static, char, Expr, Error> {
     let op_over = space()
@@ -73,7 +73,7 @@ fn left_assoc(
 }
 
 fn right_assoc(
-    op: impl Parser<char, BinOp, Error = Error> + Clone + 'static,
+    op: impl Parser<char, BinOp, Error = Error> + 'static,
     over: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> BoxedParser<'static, char, Expr, Error> {
     let over_op = over

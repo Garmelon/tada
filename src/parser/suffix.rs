@@ -131,8 +131,8 @@ impl Suffix {
 }
 
 fn suffix_call_arg(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Suffix, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error>,
+) -> impl Parser<char, Suffix, Error = Error> {
     space()
         .then_ignore(just('('))
         .then(space())
@@ -147,7 +147,7 @@ fn suffix_call_arg(
         })
 }
 
-fn suffix_call_no_arg() -> impl Parser<char, Suffix, Error = Error> + Clone {
+fn suffix_call_no_arg() -> impl Parser<char, Suffix, Error = Error> {
     space()
         .then_ignore(just('('))
         .then(space())
@@ -157,15 +157,15 @@ fn suffix_call_no_arg() -> impl Parser<char, Suffix, Error = Error> + Clone {
 
 fn suffix_call_constr(
     expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> impl Parser<char, Suffix, Error = Error> + Clone {
+) -> impl Parser<char, Suffix, Error = Error> {
     space()
         .then(table_constr(expr))
         .map(|(s0, constr)| Suffix::CallConstr { s0, constr })
 }
 
 fn suffix_field_access(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Suffix, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error>,
+) -> impl Parser<char, Suffix, Error = Error> {
     space()
         .then_ignore(just('['))
         .then(space())
@@ -182,7 +182,7 @@ fn suffix_field_access(
 
 fn suffix_field_assign(
     expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Suffix, Error = Error> + Clone {
+) -> impl Parser<char, Suffix, Error = Error> {
     space()
         .then_ignore(just('['))
         .then(space())
@@ -206,7 +206,7 @@ fn suffix_field_assign(
         )
 }
 
-fn suffix_field_access_ident() -> impl Parser<char, Suffix, Error = Error> + Clone {
+fn suffix_field_access_ident() -> impl Parser<char, Suffix, Error = Error> {
     space()
         .then_ignore(just('.'))
         .then(space())
@@ -215,8 +215,8 @@ fn suffix_field_access_ident() -> impl Parser<char, Suffix, Error = Error> + Clo
 }
 
 fn suffix_field_assign_ident(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
-) -> impl Parser<char, Suffix, Error = Error> + Clone {
+    expr: impl Parser<char, Expr, Error = Error>,
+) -> impl Parser<char, Suffix, Error = Error> {
     space()
         .then_ignore(just('.'))
         .then(space())
@@ -238,7 +238,7 @@ fn suffix_field_assign_ident(
 }
 
 pub fn suffixed(
-    atom: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+    atom: impl Parser<char, Expr, Error = Error> + 'static,
     expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> BoxedParser<'static, char, Expr, Error> {
     let call_arg = suffix_call_arg(expr.clone());

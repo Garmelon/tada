@@ -7,7 +7,7 @@ use crate::builtin::Builtin;
 
 use super::basic::{ident, space, Error};
 
-fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> + Clone {
+fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> {
     just('\'').ignore_then(choice((
         text::keyword("get").to(Builtin::Get),
         text::keyword("set").to(Builtin::Set),
@@ -21,7 +21,7 @@ fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> + Clone {
     )))
 }
 
-fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = Error> + Clone {
+fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = Error> {
     // Minimum amount of digits required to represent i64::MAX. The rest of this
     // code assumes that any value that can be represented using this amount of
     // digits fits into an u64.
@@ -71,14 +71,14 @@ fn num_lit_str_radix(radix: u32) -> impl Parser<char, (i64, NumLitStr), Error = 
         })
 }
 
-fn num_lit() -> impl Parser<char, NumLit, Error = Error> + Clone {
+fn num_lit() -> impl Parser<char, NumLit, Error = Error> {
     (just("0b").ignore_then(num_lit_str_radix(2)))
         .or(just("0x").ignore_then(num_lit_str_radix(16)))
         .or(num_lit_str_radix(10))
         .map_with_span(|(value, str), span| NumLit { value, str, span })
 }
 
-fn string_lit() -> impl Parser<char, StringLit, Error = Error> + Clone {
+fn string_lit() -> impl Parser<char, StringLit, Error = Error> {
     // TODO Parse string literals
     filter(|_| false).map(|_| unreachable!())
 }
@@ -108,7 +108,7 @@ pub fn table_lit_elem(
 
 fn table_lit(
     expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> impl Parser<char, TableLit, Error = Error> + Clone {
+) -> impl Parser<char, TableLit, Error = Error> {
     let elem = space()
         .then(table_lit_elem(expr))
         .then(space())
