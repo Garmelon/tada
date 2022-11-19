@@ -2,6 +2,8 @@ use crate::span::{HasSpan, Span};
 
 use super::{Expr, Ident, Space};
 
+// TODO Make table patterns recursive
+
 #[derive(Debug, Clone)]
 pub enum TablePatternElem {
     /// `foo`

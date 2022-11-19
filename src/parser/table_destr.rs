@@ -25,7 +25,7 @@ fn table_pattern_elem() -> impl Parser<char, TablePatternElem, Error = Error> + 
     named.or(positional)
 }
 
-fn table_pattern() -> impl Parser<char, TablePattern, Error = Error> + Clone {
+pub fn table_pattern() -> BoxedParser<'static, char, TablePattern, Error> {
     let elem = space()
         .then(table_pattern_elem())
         .then(space())
@@ -43,6 +43,7 @@ fn table_pattern() -> impl Parser<char, TablePattern, Error = Error> + Clone {
             trailing_comma,
             span,
         })
+        .boxed()
 }
 
 pub fn table_destr(
