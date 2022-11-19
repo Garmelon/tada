@@ -3,6 +3,7 @@ use crate::span::{HasSpan, Span};
 use super::basic::Space;
 use super::call::Call;
 use super::field::Field;
+use super::func_def::FuncDef;
 use super::lit::Lit;
 use super::table_constr::TableConstr;
 use super::table_destr::TableDestr;
@@ -38,6 +39,7 @@ pub enum Expr {
     Var(Var),
     TableConstr(TableConstr),
     TableDestr(TableDestr),
+    FuncDef(FuncDef),
 
     /// `(a)`
     ///
@@ -93,6 +95,7 @@ impl HasSpan for Expr {
             Expr::Var(var) => var.span(),
             Expr::TableConstr(constr) => constr.span(),
             Expr::TableDestr(destr) => destr.span(),
+            Expr::FuncDef(def) => def.span(),
             Expr::Paren { span, .. } => *span,
             Expr::Neg { span, .. } => *span,
             Expr::Not { span, .. } => *span,
