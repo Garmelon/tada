@@ -1,13 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::basic::Space;
-use super::call::Call;
-use super::field::Field;
-use super::func_def::FuncDef;
-use super::lit::Lit;
-use super::table_constr::TableConstr;
-use super::table_destr::TableDestr;
-use super::var::Var;
+use super::{Call, Field, FuncDef, Lit, Space, TableConstr, TableDestr, Var};
 
 #[derive(Debug, Clone, Copy)]
 pub enum BinOp {

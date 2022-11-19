@@ -1,7 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::basic::{Ident, Space};
-use super::expr::Expr;
+use super::{Expr, Ident, Space};
 
 #[derive(Debug, Clone)]
 pub enum TablePatternElem {

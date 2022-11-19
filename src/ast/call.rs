@@ -1,8 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::basic::Space;
-use super::expr::Expr;
-use super::table_constr::TableConstr;
+use super::{Expr, Space, TableConstr};
 
 #[derive(Debug, Clone)]
 pub enum Call {

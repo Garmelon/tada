@@ -1,8 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::basic::Space;
-use super::expr::Expr;
-use super::lit::TableLitElem;
+use super::{Expr, Space, TableLitElem};
 
 #[derive(Debug, Clone)]
 pub enum TableConstrElem {

@@ -3,8 +3,7 @@ use std::fmt;
 use crate::builtin::Builtin;
 use crate::span::{HasSpan, Span};
 
-use super::basic::{Ident, Space};
-use super::expr::Expr;
+use super::{Expr, Ident, Space};
 
 #[derive(Clone)]
 pub enum NumLitStr {
