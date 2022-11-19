@@ -2,24 +2,25 @@
 
 use chumsky::prelude::*;
 
-use crate::ast::{Expr, TableConstr, TableConstrElem};
+use crate::ast::{Expr, Space, TableConstr, TableConstrElem, TableLitElem};
 
-use super::basic::{space, Error};
-use super::lit::table_lit_elem;
+use super::basic::{EParser, Error};
 
 fn table_constr_elem(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+    space: EParser<Space>,
+    table_lit_elem: EParser<TableLitElem>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, TableConstrElem, Error = Error> {
-    let lit = table_lit_elem(expr.clone()).map(TableConstrElem::Lit);
+    let lit = table_lit_elem.map(TableConstrElem::Lit);
 
     let indexed = just('[')
-        .ignore_then(space())
+        .ignore_then(space.clone())
         .then(expr.clone())
-        .then(space())
+        .then(space.clone())
         .then_ignore(just(']'))
-        .then(space())
+        .then(space.clone())
         .then_ignore(just(':'))
-        .then(space())
+        .then(space)
         .then(expr)
         .map_with_span(
             |(((((s0, index), s1), s2), s3), value), span| TableConstrElem::Indexed {
@@ -37,14 +38,17 @@ fn table_constr_elem(
 }
 
 pub fn table_constr(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> BoxedParser<'static, char, TableConstr, Error> {
-    let elem = space()
-        .then(table_constr_elem(expr))
-        .then(space())
+    space: EParser<Space>,
+    table_lit_elem: EParser<TableLitElem>,
+    expr: EParser<Expr>,
+) -> EParser<TableConstr> {
+    let elem = space
+        .clone()
+        .then(table_constr_elem(space.clone(), table_lit_elem, expr))
+        .then(space.clone())
         .map(|((s0, elem), s1)| (s0, elem, s1));
 
-    let trailing_comma = just(',').ignore_then(space()).or_not();
+    let trailing_comma = just(',').ignore_then(space).or_not();
 
     let elems = elem.separated_by(just(',')).then(trailing_comma);
 

@@ -2,10 +2,10 @@
 
 use chumsky::prelude::*;
 
-use crate::ast::{Expr, Lit, NumLit, NumLitStr, StringLit, TableLit, TableLitElem};
+use crate::ast::{Expr, Ident, Lit, NumLit, NumLitStr, Space, StringLit, TableLit, TableLitElem};
 use crate::builtin::Builtin;
 
-use super::basic::{ident, space, Error};
+use super::basic::{EParser, Error};
 
 fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> {
     just('\'').ignore_then(choice((
@@ -84,16 +84,18 @@ fn string_lit() -> impl Parser<char, StringLit, Error = Error> {
 }
 
 pub fn table_lit_elem(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> BoxedParser<'static, char, TableLitElem, Error> {
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    expr: EParser<Expr>,
+) -> EParser<TableLitElem> {
     let positional = expr
         .clone()
         .map(|value| TableLitElem::Positional(Box::new(value)));
 
-    let named = ident()
-        .then(space())
+    let named = ident
+        .then(space.clone())
         .then_ignore(just(':'))
-        .then(space())
+        .then(space)
         .then(expr)
         .map_with_span(|(((name, s0), s1), value), span| TableLitElem::Named {
             name,
@@ -107,14 +109,16 @@ pub fn table_lit_elem(
 }
 
 fn table_lit(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+    space: EParser<Space>,
+    table_lit_elem: EParser<TableLitElem>,
 ) -> impl Parser<char, TableLit, Error = Error> {
-    let elem = space()
-        .then(table_lit_elem(expr))
-        .then(space())
+    let elem = space
+        .clone()
+        .then(table_lit_elem)
+        .then(space.clone())
         .map(|((s0, elem), s1)| (s0, elem, s1));
 
-    let trailing_comma = just(',').ignore_then(space()).or_not();
+    let trailing_comma = just(',').ignore_then(space).or_not();
 
     let elems = elem.separated_by(just(',')).then(trailing_comma);
 
@@ -128,16 +132,14 @@ fn table_lit(
         })
 }
 
-pub fn lit(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> BoxedParser<'static, char, Lit, Error> {
+pub fn lit(space: EParser<Space>, table_lit_elem: EParser<TableLitElem>) -> EParser<Lit> {
     let nil = text::keyword("nil").map_with_span(|_, span| Lit::Nil(span));
     let r#true = text::keyword("true").map_with_span(|_, span| Lit::Bool(true, span));
     let r#false = text::keyword("false").map_with_span(|_, span| Lit::Bool(false, span));
     let builtin = builtin_lit().map_with_span(Lit::Builtin);
     let num = num_lit().map(Lit::Num);
     let string = string_lit().map(Lit::String);
-    let table = table_lit(expr).map(Lit::Table);
+    let table = table_lit(space, table_lit_elem).map(Lit::Table);
 
     nil.or(r#true)
         .or(r#false)

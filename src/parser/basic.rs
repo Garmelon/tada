@@ -7,8 +7,7 @@ use crate::ast::{Ident, Line, Space};
 use crate::span::Span;
 
 pub type Error = Simple<char, Span>;
-
-// TODO https://github.com/rust-lang/rust/issues/63063
+pub type EParser<O> = BoxedParser<'static, char, O, Error>;
 
 fn inline() -> impl Parser<char, (), Error = Error> {
     filter(|c: &char| c.is_whitespace() && *c != '\n')
@@ -32,7 +31,7 @@ fn line() -> impl Parser<char, Line, Error = Error> {
     empty.or(comment)
 }
 
-pub fn space() -> BoxedParser<'static, char, Space, Error> {
+pub fn space() -> EParser<Space> {
     inline()
         .ignore_then(line())
         .repeated()
@@ -41,7 +40,7 @@ pub fn space() -> BoxedParser<'static, char, Space, Error> {
         .boxed()
 }
 
-pub fn ident() -> BoxedParser<'static, char, Ident, Error> {
+pub fn ident() -> EParser<Ident> {
     text::ident()
         .try_map(|name, span| {
             if matches!(
@@ -56,6 +55,6 @@ pub fn ident() -> BoxedParser<'static, char, Ident, Error> {
         .boxed()
 }
 
-pub fn local() -> BoxedParser<'static, char, Option<Space>, Error> {
-    text::keyword("local").ignore_then(space()).or_not().boxed()
+pub fn local(space: EParser<Space>) -> EParser<Option<Space>> {
+    text::keyword("local").ignore_then(space).or_not().boxed()
 }

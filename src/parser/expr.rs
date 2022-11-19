@@ -2,25 +2,19 @@
 
 use chumsky::prelude::*;
 
-use crate::ast::{BinOp, Expr};
+use crate::ast::{BinOp, Expr, FuncDef, Lit, Space, TableConstr, TableDestr, Var};
 use crate::span::HasSpan;
 
-use super::basic::{space, Error};
-use super::func_defs::func_def;
-use super::lit::lit;
-use super::prefix::prefixed;
-use super::suffix::suffixed;
-use super::table_constr::table_constr;
-use super::table_destr::table_destr;
-use super::var::var;
+use super::basic::{EParser, Error};
 
 fn atom_paren(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
+    space: EParser<Space>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, Expr, Error = Error> + Clone {
     just('(')
-        .ignore_then(space())
+        .ignore_then(space.clone())
         .then(expr)
-        .then(space())
+        .then(space)
         .then_ignore(just(')'))
         .map_with_span(|((s0, inner), s1), span| Expr::Paren {
             s0,
@@ -30,33 +24,39 @@ fn atom_paren(
         })
 }
 
-fn atom(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> impl Parser<char, Expr, Error = Error> + Clone {
-    let lit = lit(expr.clone()).map(Expr::Lit);
-    let var = var(expr.clone()).map(Expr::Var);
-    let table_constr = table_constr(expr.clone()).map(Expr::TableConstr);
-    let table_destr = table_destr(expr.clone()).map(Expr::TableDestr);
-    let func_def = func_def(expr.clone()).map(Expr::FuncDef);
-    let paren = atom_paren(expr.clone());
+pub fn atom(
+    space: EParser<Space>,
+    lit: EParser<Lit>,
+    var: EParser<Var>,
+    table_constr: EParser<TableConstr>,
+    table_destr: EParser<TableDestr>,
+    func_def: EParser<FuncDef>,
+    expr: EParser<Expr>,
+) -> EParser<Expr> {
+    let lit = lit.map(Expr::Lit);
+    let var = var.map(Expr::Var);
+    let table_constr = table_constr.map(Expr::TableConstr);
+    let table_destr = table_destr.map(Expr::TableDestr);
+    let func_def = func_def.map(Expr::FuncDef);
+    let paren = atom_paren(space, expr);
 
-    let base = lit
-        .or(paren)
+    lit.or(paren)
         .or(table_destr)
         .or(table_constr)
         .or(func_def)
-        .or(var);
-
-    prefixed(suffixed(base, expr))
+        .or(var)
+        .boxed()
 }
 
 fn left_assoc(
+    space: EParser<Space>,
     op: impl Parser<char, BinOp, Error = Error> + 'static,
     over: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> BoxedParser<'static, char, Expr, Error> {
-    let op_over = space()
+) -> EParser<Expr> {
+    let op_over = space
+        .clone()
         .then(op)
-        .then(space())
+        .then(space)
         .then(over.clone())
         .map(|(((s0, op), s1), right)| (s0, op, s1, right));
 
@@ -73,14 +73,15 @@ fn left_assoc(
 }
 
 fn right_assoc(
+    space: EParser<Space>,
     op: impl Parser<char, BinOp, Error = Error> + 'static,
     over: impl Parser<char, Expr, Error = Error> + Clone + 'static,
 ) -> BoxedParser<'static, char, Expr, Error> {
     let over_op = over
         .clone()
-        .then(space())
+        .then(space.clone())
         .then(op)
-        .then(space())
+        .then(space)
         .map(|(((left, s0), op), s1)| (left, s0, op, s1));
 
     over_op
@@ -97,9 +98,7 @@ fn right_assoc(
         .boxed()
 }
 
-pub fn expr(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> BoxedParser<'static, char, Expr, Error> {
+pub fn expr(space: EParser<Space>, prefixed: EParser<Expr>) -> EParser<Expr> {
     // * / %
     let op_prec_4 = (just('*').to(BinOp::Mul))
         .or(just('/').to(BinOp::Div))
@@ -123,12 +122,19 @@ pub fn expr(
     let op_prec_0 = text::keyword("or").to(BinOp::Or);
 
     right_assoc(
+        space.clone(),
         op_prec_0,
         right_assoc(
+            space.clone(),
             op_prec_1,
             left_assoc(
+                space.clone(),
                 op_prec_2,
-                left_assoc(op_prec_3, left_assoc(op_prec_4, atom(expr))),
+                left_assoc(
+                    space.clone(),
+                    op_prec_3,
+                    left_assoc(space, op_prec_4, prefixed),
+                ),
             ),
         ),
     )

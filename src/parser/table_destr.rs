@@ -2,18 +2,22 @@
 
 use chumsky::prelude::*;
 
-use crate::ast::{Expr, TableDestr, TablePattern, TablePatternElem};
+use crate::ast::{Expr, Ident, Space, TableDestr, TablePattern, TablePatternElem};
 
-use super::basic::{ident, space, Error};
+use super::basic::{EParser, Error};
 
-fn table_pattern_elem() -> impl Parser<char, TablePatternElem, Error = Error> {
-    let positional = ident().map(TablePatternElem::Positional);
+fn table_pattern_elem(
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+) -> impl Parser<char, TablePatternElem, Error = Error> {
+    let positional = ident.clone().map(TablePatternElem::Positional);
 
-    let named = ident()
-        .then(space())
+    let named = ident
+        .clone()
+        .then(space.clone())
         .then_ignore(just(':'))
-        .then(space())
-        .then(ident())
+        .then(space)
+        .then(ident)
         .map_with_span(|(((name, s0), s1), ident), span| TablePatternElem::Named {
             name,
             s0,
@@ -25,13 +29,14 @@ fn table_pattern_elem() -> impl Parser<char, TablePatternElem, Error = Error> {
     named.or(positional)
 }
 
-pub fn table_pattern() -> BoxedParser<'static, char, TablePattern, Error> {
-    let elem = space()
-        .then(table_pattern_elem())
-        .then(space())
+pub fn table_pattern(space: EParser<Space>, ident: EParser<Ident>) -> EParser<TablePattern> {
+    let elem = space
+        .clone()
+        .then(table_pattern_elem(space.clone(), ident))
+        .then(space.clone())
         .map(|((s0, elem), s1)| (s0, elem, s1));
 
-    let trailing_comma = just(',').ignore_then(space()).or_not();
+    let trailing_comma = just(',').ignore_then(space).or_not();
 
     let elems = elem.separated_by(just(',')).then(trailing_comma);
 
@@ -47,15 +52,16 @@ pub fn table_pattern() -> BoxedParser<'static, char, TablePattern, Error> {
 }
 
 pub fn table_destr(
-    expr: impl Parser<char, Expr, Error = Error> + 'static,
-) -> BoxedParser<'static, char, TableDestr, Error> {
-    let local = text::keyword("local").ignore_then(space()).or_not();
-
+    space: EParser<Space>,
+    local: EParser<Option<Space>>,
+    table_pattern: EParser<TablePattern>,
+    expr: EParser<Expr>,
+) -> EParser<TableDestr> {
     local
-        .then(table_pattern())
-        .then(space())
+        .then(table_pattern)
+        .then(space.clone())
         .then_ignore(just('='))
-        .then(space())
+        .then(space)
         .then(expr)
         .map_with_span(|((((local, pattern), s0), s1), value), span| TableDestr {
             local,

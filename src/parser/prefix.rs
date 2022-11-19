@@ -5,7 +5,7 @@ use chumsky::prelude::*;
 use crate::ast::{Expr, Space};
 use crate::span::{HasSpan, Span};
 
-use super::basic::{space, Error};
+use super::basic::{EParser, Error};
 
 enum Prefix {
     /// See [`Expr::Neg`].
@@ -35,25 +35,23 @@ impl Prefix {
     }
 }
 
-fn prefix_neg() -> impl Parser<char, Prefix, Error = Error> {
+fn prefix_neg(space: EParser<Space>) -> impl Parser<char, Prefix, Error = Error> {
     just('-')
         .map_with_span(|_, span| span)
-        .then(space())
+        .then(space)
         .map(|(minus, s0)| Prefix::Neg { minus, s0 })
 }
 
-fn prefix_not() -> impl Parser<char, Prefix, Error = Error> {
+fn prefix_not(space: EParser<Space>) -> impl Parser<char, Prefix, Error = Error> {
     text::keyword("not")
         .map_with_span(|_, span| span)
-        .then(space())
+        .then(space)
         .map(|(not, s0)| Prefix::Not { not, s0 })
 }
 
-pub fn prefixed(
-    suffixed: impl Parser<char, Expr, Error = Error> + 'static,
-) -> BoxedParser<'static, char, Expr, Error> {
-    let prefix = prefix_neg()
-        .or(prefix_not())
+pub fn prefixed(space: EParser<Space>, suffixed: EParser<Expr>) -> EParser<Expr> {
+    let prefix = prefix_neg(space.clone())
+        .or(prefix_not(space))
         .map_with_span(|prefix, span| (prefix, span));
 
     prefix

@@ -1,19 +1,21 @@
+// TODO Rename this module to func_def for consistency
+
 use chumsky::prelude::*;
 
-use crate::ast::{Expr, FuncDef};
+use crate::ast::{Expr, FuncDef, Ident, Space, TablePattern};
 
-use super::basic::{ident, local, space, Error};
-use super::table_destr::table_pattern;
+use super::basic::{EParser, Error};
 
 fn func_def_anon_no_arg(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, FuncDef, Error = Error> {
     text::keyword("function")
-        .ignore_then(space())
+        .ignore_then(space.clone())
         .then_ignore(just('('))
-        .then(space())
+        .then(space.clone())
         .then_ignore(just(')'))
-        .then(space())
+        .then(space)
         .then(expr)
         .map_with_span(|(((s0, s1), s2), body), span| FuncDef::AnonNoArg {
             s0,
@@ -25,16 +27,18 @@ fn func_def_anon_no_arg(
 }
 
 fn func_def_anon_arg(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, FuncDef, Error = Error> {
     text::keyword("function")
-        .ignore_then(space())
+        .ignore_then(space.clone())
         .then_ignore(just('('))
-        .then(space())
-        .then(ident())
-        .then(space())
+        .then(space.clone())
+        .then(ident)
+        .then(space.clone())
         .then_ignore(just(')'))
-        .then(space())
+        .then(space)
         .then(expr)
         .map_with_span(
             |(((((s0, s1), arg), s2), s3), body), span| FuncDef::AnonArg {
@@ -50,12 +54,14 @@ fn func_def_anon_arg(
 }
 
 fn func_def_anon_destr(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    table_pattern: EParser<TablePattern>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, FuncDef, Error = Error> {
     text::keyword("function")
-        .ignore_then(space())
-        .then(table_pattern())
-        .then(space())
+        .ignore_then(space.clone())
+        .then(table_pattern)
+        .then(space)
         .then(expr)
         .map_with_span(|(((s0, pattern), s1), body), span| FuncDef::AnonDestr {
             s0,
@@ -67,17 +73,20 @@ fn func_def_anon_destr(
 }
 
 fn func_def_named_no_arg(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    local: EParser<Option<Space>>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, FuncDef, Error = Error> {
-    local()
+    local
         .then_ignore(text::keyword("function"))
-        .then(space())
-        .then(ident())
-        .then(space())
+        .then(space.clone())
+        .then(ident)
+        .then(space.clone())
         .then_ignore(just('('))
-        .then(space())
+        .then(space.clone())
         .then_ignore(just(')'))
-        .then(space())
+        .then(space)
         .then(expr)
         .map_with_span(
             |((((((local, s0), name), s1), s2), s3), body), span| FuncDef::NamedNoArg {
@@ -94,19 +103,22 @@ fn func_def_named_no_arg(
 }
 
 fn func_def_named_arg(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    local: EParser<Option<Space>>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, FuncDef, Error = Error> {
-    local()
+    local
         .then_ignore(text::keyword("function"))
-        .then(space())
-        .then(ident())
-        .then(space())
+        .then(space.clone())
+        .then(ident.clone())
+        .then(space.clone())
         .then_ignore(just('('))
-        .then(space())
-        .then(ident())
-        .then(space())
+        .then(space.clone())
+        .then(ident)
+        .then(space.clone())
         .then_ignore(just(')'))
-        .then(space())
+        .then(space)
         .then(expr)
         .map_with_span(
             |((((((((local, s0), name), s1), s2), arg), s3), s4), body), span| FuncDef::NamedArg {
@@ -125,15 +137,19 @@ fn func_def_named_arg(
 }
 
 fn func_def_named_destr(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    local: EParser<Option<Space>>,
+    table_pattern: EParser<TablePattern>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, FuncDef, Error = Error> {
-    local()
+    local
         .then_ignore(text::keyword("function"))
-        .then(space())
-        .then(ident())
-        .then(space())
-        .then(table_pattern())
-        .then(space())
+        .then(space.clone())
+        .then(ident)
+        .then(space.clone())
+        .then(table_pattern)
+        .then(space)
         .then(expr)
         .map_with_span(|((((((local, s0), name), s1), pattern), s2), body), span| {
             FuncDef::NamedDestr {
@@ -150,13 +166,35 @@ fn func_def_named_destr(
 }
 
 pub fn func_def(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> BoxedParser<'static, char, FuncDef, Error> {
-    func_def_anon_no_arg(expr.clone())
-        .or(func_def_anon_arg(expr.clone()))
-        .or(func_def_anon_destr(expr.clone()))
-        .or(func_def_named_no_arg(expr.clone()))
-        .or(func_def_named_arg(expr.clone()))
-        .or(func_def_named_destr(expr))
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    local: EParser<Option<Space>>,
+    table_pattern: EParser<TablePattern>,
+    expr: EParser<Expr>,
+) -> EParser<FuncDef> {
+    let anon_no_arg = func_def_anon_no_arg(space.clone(), expr.clone());
+    let anon_arg = func_def_anon_arg(space.clone(), ident.clone(), expr.clone());
+    let anon_destr =
+        func_def_anon_destr(space.clone(), table_pattern.clone(), expr.clone().clone());
+    let named_no_arg = func_def_named_no_arg(
+        space.clone(),
+        ident.clone(),
+        local.clone(),
+        expr.clone().clone(),
+    );
+    let named_arg = func_def_named_arg(
+        space.clone(),
+        ident.clone(),
+        local.clone(),
+        expr.clone().clone(),
+    );
+    let named_destr = func_def_named_destr(space, ident, local, table_pattern, expr);
+
+    anon_no_arg
+        .or(anon_arg)
+        .or(anon_destr)
+        .or(named_no_arg)
+        .or(named_arg)
+        .or(named_destr)
         .boxed()
 }

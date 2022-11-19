@@ -5,8 +5,7 @@ use chumsky::prelude::*;
 use crate::ast::{Call, Expr, Field, Ident, Space, TableConstr};
 use crate::span::{HasSpan, Span};
 
-use super::basic::{ident, space, Error};
-use super::table_constr::table_constr;
+use super::basic::{EParser, Error};
 
 enum Suffix {
     /// See [`Call::Arg`].
@@ -131,13 +130,15 @@ impl Suffix {
 }
 
 fn suffix_call_arg(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, Suffix, Error = Error> {
-    space()
+    space
+        .clone()
         .then_ignore(just('('))
-        .then(space())
+        .then(space.clone())
         .then(expr)
-        .then(space())
+        .then(space)
         .then_ignore(just(')'))
         .map(|(((s0, s1), arg), s2)| Suffix::CallArg {
             s0,
@@ -147,30 +148,34 @@ fn suffix_call_arg(
         })
 }
 
-fn suffix_call_no_arg() -> impl Parser<char, Suffix, Error = Error> {
-    space()
+fn suffix_call_no_arg(space: EParser<Space>) -> impl Parser<char, Suffix, Error = Error> {
+    space
+        .clone()
         .then_ignore(just('('))
-        .then(space())
+        .then(space)
         .then_ignore(just(')'))
         .map(|(s0, s1)| Suffix::CallNoArg { s0, s1 })
 }
 
 fn suffix_call_constr(
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
+    space: EParser<Space>,
+    table_constr: EParser<TableConstr>,
 ) -> impl Parser<char, Suffix, Error = Error> {
-    space()
-        .then(table_constr(expr))
+    space
+        .then(table_constr)
         .map(|(s0, constr)| Suffix::CallConstr { s0, constr })
 }
 
 fn suffix_field_access(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, Suffix, Error = Error> {
-    space()
+    space
+        .clone()
         .then_ignore(just('['))
-        .then(space())
+        .then(space.clone())
         .then(expr)
-        .then(space())
+        .then(space)
         .then_ignore(just(']'))
         .map(|(((s0, s1), index), s2)| Suffix::FieldAccess {
             s0,
@@ -181,17 +186,19 @@ fn suffix_field_access(
 }
 
 fn suffix_field_assign(
-    expr: impl Parser<char, Expr, Error = Error> + Clone,
+    space: EParser<Space>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, Suffix, Error = Error> {
-    space()
+    space
+        .clone()
         .then_ignore(just('['))
-        .then(space())
+        .then(space.clone())
         .then(expr.clone())
-        .then(space())
+        .then(space.clone())
         .then_ignore(just(']'))
-        .then(space())
+        .then(space.clone())
         .then_ignore(just('='))
-        .then(space())
+        .then(space)
         .then(expr)
         .map(
             |((((((s0, s1), index), s2), s3), s4), value)| Suffix::FieldAssign {
@@ -206,24 +213,31 @@ fn suffix_field_assign(
         )
 }
 
-fn suffix_field_access_ident() -> impl Parser<char, Suffix, Error = Error> {
-    space()
+fn suffix_field_access_ident(
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+) -> impl Parser<char, Suffix, Error = Error> {
+    space
+        .clone()
         .then_ignore(just('.'))
-        .then(space())
-        .then(ident())
+        .then(space)
+        .then(ident)
         .map(|((s0, s1), ident)| Suffix::FieldAccessIdent { s0, s1, ident })
 }
 
 fn suffix_field_assign_ident(
-    expr: impl Parser<char, Expr, Error = Error>,
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    expr: EParser<Expr>,
 ) -> impl Parser<char, Suffix, Error = Error> {
-    space()
+    space
+        .clone()
         .then_ignore(just('.'))
-        .then(space())
-        .then(ident())
-        .then(space())
+        .then(space.clone())
+        .then(ident)
+        .then(space.clone())
         .then_ignore(just('='))
-        .then(space())
+        .then(space)
         .then(expr)
         .map(
             |(((((s0, s1), ident), s2), s3), value)| Suffix::FieldAssignIdent {
@@ -238,16 +252,19 @@ fn suffix_field_assign_ident(
 }
 
 pub fn suffixed(
-    atom: impl Parser<char, Expr, Error = Error> + 'static,
-    expr: impl Parser<char, Expr, Error = Error> + Clone + 'static,
-) -> BoxedParser<'static, char, Expr, Error> {
-    let call_arg = suffix_call_arg(expr.clone());
-    let call_no_arg = suffix_call_no_arg();
-    let call_constr = suffix_call_constr(expr.clone());
-    let field_access = suffix_field_access(expr.clone());
-    let field_assign = suffix_field_assign(expr.clone());
-    let field_access_ident = suffix_field_access_ident();
-    let field_assign_ident = suffix_field_assign_ident(expr);
+    space: EParser<Space>,
+    ident: EParser<Ident>,
+    table_constr: EParser<TableConstr>,
+    atom: EParser<Expr>,
+    expr: EParser<Expr>,
+) -> EParser<Expr> {
+    let call_arg = suffix_call_arg(space.clone(), expr.clone());
+    let call_no_arg = suffix_call_no_arg(space.clone());
+    let call_constr = suffix_call_constr(space.clone(), table_constr);
+    let field_access = suffix_field_access(space.clone(), expr.clone());
+    let field_assign = suffix_field_assign(space.clone(), expr.clone());
+    let field_access_ident = suffix_field_access_ident(space.clone(), ident.clone());
+    let field_assign_ident = suffix_field_assign_ident(space, ident, expr);
 
     let suffix = call_arg
         .or(call_no_arg)
