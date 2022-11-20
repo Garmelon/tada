@@ -29,7 +29,7 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Expr {
             Self::Call(call) => allocator.text("<call>"),
             Self::Field(field) => allocator.text("<field>"),
             Self::Var(var) => allocator.text("<var>"),
-            Self::TableConstr(constr) => allocator.text("<constr>"),
+            Self::TableConstr(constr) => constr.pretty(allocator),
             Self::TableDestr(destr) => allocator.text("<destr>"),
             Self::FuncDef(def) => allocator.text("<def>"),
             Self::Paren {
