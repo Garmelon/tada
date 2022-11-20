@@ -2,6 +2,7 @@
 //!
 //! # Rules
 //!
+//! - Parsers must not consume surrounding whitespace.
 //! - Public parser functions must return [`basic::EParser`].
 //! - Public parser functions must receive public subparsers via their arguments.
 //! - Each public parser function must be called exactly once, inside this file.
