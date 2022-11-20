@@ -45,7 +45,7 @@ pub fn ident() -> EParser<Ident> {
         .try_map(|name, span| {
             if matches!(
                 &name as &str,
-                "nil" | "true" | "false" | "local" | "function" | "not" | "and" | "or"
+                "nil" | "true" | "false" | "not" | "and" | "or" | "local" | "function" | "module"
             ) {
                 Err(Simple::custom(span, "identifier uses reserved name"))
             } else {
