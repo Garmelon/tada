@@ -1,6 +1,12 @@
-use pretty::{DocAllocator, DocBuilder};
+use pretty::{DocAllocator, DocBuilder, Pretty};
 
-use crate::ast::Separated;
+use crate::ast::{Ident, Separated};
+
+impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Ident {
+    fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
+        allocator.text(self.name)
+    }
+}
 
 impl<E, S1, S2> Separated<E, S1, S2> {
     pub fn pretty<'a, D, FE, FS1, FS2>(
