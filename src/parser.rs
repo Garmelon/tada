@@ -20,6 +20,7 @@ mod expr;
 mod func_defs;
 mod lit;
 mod prefix;
+mod program;
 mod suffix;
 mod table_constr;
 mod table_destr;
@@ -27,11 +28,11 @@ mod var;
 
 use chumsky::prelude::*;
 
-use crate::ast::Expr;
+use crate::ast::Program;
 
 use self::basic::Error;
 
-pub fn parser() -> impl Parser<char, Expr, Error = Error> {
+pub fn parser() -> impl Parser<char, Program, Error = Error> {
     let space = basic::space();
     let ident = basic::ident();
     let local = basic::local(space.clone());
@@ -66,11 +67,15 @@ pub fn parser() -> impl Parser<char, Expr, Error = Error> {
             func_def,
             expr.clone(),
         );
-        let suffixed = suffix::suffixed(space.clone(), ident, table_constr, atom, expr);
+        let suffixed = suffix::suffixed(space.clone(), ident.clone(), table_constr, atom, expr);
         let prefixed = prefix::prefixed(space.clone(), suffixed);
 
-        expr::expr(space, prefixed)
-    });
+        expr::expr(space.clone(), prefixed)
+    })
+    .boxed();
 
-    expr.padded().then_ignore(end())
+    let table_lit_elem = lit::table_lit_elem(space.clone(), ident, expr.clone());
+    let program = program::program(space, table_lit_elem, expr);
+
+    program.then_ignore(end())
 }
