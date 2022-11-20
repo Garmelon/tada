@@ -4,18 +4,30 @@ use crate::span::{HasSpan, Span};
 
 use super::{Call, Field, FuncDef, Lit, Space, TableConstr, TableDestr, Var};
 
+// Warning: If you change these precedences and associativities, you need to
+// update the parser and pretty-printer as well.
+
+// Warning: Operators at the same precedence must also have the same
+// associativity.
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Assoc {
+    Left,
+    Right,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum BinOp {
-    /// `+`
-    Add,
-    /// `-`
-    Sub,
     /// `*`
     Mul,
     /// `/`
     Div,
     /// `%`
     Mod,
+    /// `+`
+    Add,
+    /// `-`
+    Sub,
     /// `==`
     Eq,
     /// `!=`
@@ -32,6 +44,36 @@ pub enum BinOp {
     And,
     /// `or`
     Or,
+}
+
+impl BinOp {
+    /// The higher the precedence, the more strongly the operator binds.
+    pub fn precedence(self) -> u8 {
+        match self {
+            Self::Mul | Self::Div | Self::Mod => 4,
+            Self::Add | Self::Sub => 3,
+            Self::Eq | Self::Neq | Self::Gt | Self::Ge | Self::Lt | Self::Le => 2,
+            Self::And => 1,
+            Self::Or => 0,
+        }
+    }
+
+    pub fn assoc(self) -> Assoc {
+        match self {
+            Self::Mul
+            | Self::Div
+            | Self::Mod
+            | Self::Add
+            | Self::Sub
+            | Self::Eq
+            | Self::Neq
+            | Self::Gt
+            | Self::Ge
+            | Self::Lt
+            | Self::Le => Assoc::Left,
+            Self::And | Self::Or => Assoc::Right,
+        }
+    }
 }
 
 #[derive(Clone)]
