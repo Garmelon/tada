@@ -10,14 +10,21 @@ impl Program {
                 expr,
                 s1,
                 span: _,
-            } => RcDoc::nil(),
+            } => RcDoc::text("<expr>"),
             Program::Module {
                 s0,
                 s1,
                 elems,
                 s2,
                 span: _,
-            } => RcDoc::text("module"),
+            } => RcDoc::text("module")
+                .append(RcDoc::line())
+                .append(RcDoc::line())
+                .append(elems.to_doc(
+                    |e| RcDoc::text("<elem>"),
+                    |(s0, s1)| RcDoc::text(",").append(RcDoc::line()),
+                    |s| RcDoc::text(","),
+                )),
         }
     }
 }
