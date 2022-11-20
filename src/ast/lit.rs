@@ -53,7 +53,7 @@ impl HasSpan for NumLit {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum StringLitElem {
     /// Normal unescaped characters
     Plain(String),
@@ -69,6 +69,20 @@ pub enum StringLitElem {
     CarriageReturn,
     /// `\n`
     Newline,
+}
+
+impl fmt::Debug for StringLitElem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Plain(str) => write!(f, "Plain({str:?})"),
+            Self::Unicode(char) => write!(f, "Unicode(0x{:x})", *char as u32),
+            Self::Backslash => write!(f, "Backslash"),
+            Self::DoubleQuote => write!(f, "DoubleQuote"),
+            Self::Tab => write!(f, "Tab"),
+            Self::CarriageReturn => write!(f, "CarriageReturn"),
+            Self::Newline => write!(f, "Newline"),
+        }
+    }
 }
 
 /// - `"Hello world\n"`
@@ -156,7 +170,10 @@ impl fmt::Debug for Lit {
             Self::Bool(b, _) => write!(f, "l#{b:?}"),
             Self::Builtin(b, _) => write!(f, "l#{b:?}"),
             Self::Num(n) => write!(f, "l#{n:?}"),
-            Self::String(s) => write!(f, "l#{s:?}"),
+            Self::String(s) => {
+                write!(f, "l#")?;
+                s.fmt(f)
+            }
             Self::Table(t) => {
                 write!(f, "l#")?;
                 t.fmt(f)
