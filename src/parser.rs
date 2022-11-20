@@ -18,7 +18,7 @@
 
 mod basic;
 mod expr;
-mod func_defs;
+mod func_def;
 mod lit;
 mod prefix;
 mod program;
@@ -52,7 +52,7 @@ pub fn parser() -> impl Parser<char, Program, Error = Error> {
             table_pattern.clone(),
             expr.clone(),
         );
-        let func_def = func_defs::func_def(
+        let func_def = func_def::func_def(
             space.clone(),
             ident.clone(),
             local,

@@ -1,5 +1,3 @@
-// TODO Rename this module to func_def for consistency
-
 use chumsky::prelude::*;
 
 use crate::ast::{Expr, FuncDef, Ident, Space, TablePattern};
