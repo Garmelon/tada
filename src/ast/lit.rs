@@ -54,26 +54,36 @@ impl HasSpan for NumLit {
 }
 
 #[derive(Debug, Clone)]
-pub enum StringLit {
-    /// - `"Hello world\n"`
-    /// - `""`
-    Inline(String, Span),
+pub enum StringLitElem {
+    /// Normal unescaped characters
+    Plain(String),
+    /// `\u{xxxx}`
+    Unicode(char),
+    /// `\\`
+    Backslash,
+    /// `\'`
+    SingleQuote,
+    /// `\"'`
+    DoubleQuote,
+    /// `\t`
+    Tab,
+    /// `\r`
+    CarriageReturn,
+    /// `\n`
+    Newline,
+}
 
-    /// ```text
-    /// """
-    ///     Hello,
-    ///     world!
-    /// """
-    /// ```
-    Multiline(String, Span),
+/// - `"Hello world\n"`
+/// - `""`
+#[derive(Debug, Clone)]
+pub struct StringLit {
+    elems: Vec<StringLitElem>,
+    span: Span,
 }
 
 impl HasSpan for StringLit {
     fn span(&self) -> Span {
-        match self {
-            StringLit::Inline(_, span) => *span,
-            StringLit::Multiline(_, span) => *span,
-        }
+        self.span
     }
 }
 
