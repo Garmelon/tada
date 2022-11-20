@@ -1,29 +1,31 @@
-use pretty::RcDoc;
+use pretty::{DocAllocator, DocBuilder, Pretty};
 
 use crate::ast::Program;
 
-impl Program {
-    pub fn to_doc(&self) -> RcDoc {
+impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Program {
+    fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
             Program::Expr {
                 s0,
                 expr,
                 s1,
                 span: _,
-            } => expr.to_doc(),
+            } => expr.pretty(allocator),
             Program::Module {
                 s0,
                 s1,
                 elems,
                 s2,
                 span: _,
-            } => RcDoc::text("module")
-                .append(RcDoc::line())
-                .append(RcDoc::line())
-                .append(elems.to_doc(
-                    |e| RcDoc::text("<elem>"),
-                    |(s0, s1)| RcDoc::text(",").append(RcDoc::line()),
-                    |s| RcDoc::text(","),
+            } => allocator
+                .text("module")
+                .append(allocator.line())
+                .append(allocator.line())
+                .append(elems.pretty(
+                    allocator,
+                    |a, e| a.text("<elem>"),
+                    |a, (s0, s1)| a.text(",").append(a.line()),
+                    |a, s| a.text(","),
                 )),
         }
     }

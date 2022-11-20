@@ -1,23 +1,23 @@
-use pretty::RcDoc;
+use pretty::{DocAllocator, DocBuilder, Pretty};
 
 use crate::ast::Expr;
 
-impl Expr {
-    pub fn to_doc(&self) -> RcDoc {
+impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Expr {
+    fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
-            Expr::Lit(lit) => RcDoc::text("<lit>"),
-            Expr::Call(call) => RcDoc::text("<call>"),
-            Expr::Field(field) => RcDoc::text("<field>"),
-            Expr::Var(var) => RcDoc::text("<var>"),
-            Expr::TableConstr(constr) => RcDoc::text("<onstr>"),
-            Expr::TableDestr(destr) => RcDoc::text("<destr>"),
-            Expr::FuncDef(def) => RcDoc::text("<def>"),
+            Expr::Lit(lit) => allocator.text("<lit>"),
+            Expr::Call(call) => allocator.text("<call>"),
+            Expr::Field(field) => allocator.text("<field>"),
+            Expr::Var(var) => allocator.text("<var>"),
+            Expr::TableConstr(constr) => allocator.text("<onstr>"),
+            Expr::TableDestr(destr) => allocator.text("<destr>"),
+            Expr::FuncDef(def) => allocator.text("<def>"),
             Expr::Paren {
                 s0,
                 inner,
                 s1,
                 span: _,
-            } => RcDoc::text("(").append(inner.to_doc()).append(")"),
+            } => inner.pretty(allocator).parens(),
 
             // TODO Check whether parentheses are necessary
             Expr::Neg {
@@ -25,7 +25,7 @@ impl Expr {
                 s0,
                 expr,
                 span: _,
-            } => RcDoc::text("-").append(expr.to_doc()),
+            } => allocator.text("-").append(expr.pretty(allocator)),
 
             // TODO Check whether parentheses are necessary
             Expr::Not {
@@ -33,7 +33,7 @@ impl Expr {
                 s0,
                 expr,
                 span: _,
-            } => RcDoc::text("not ").append(expr.to_doc()),
+            } => allocator.text("not ").append(expr.pretty(allocator)),
 
             Expr::BinOp {
                 left,
@@ -42,7 +42,7 @@ impl Expr {
                 s1,
                 right,
                 span: _,
-            } => RcDoc::text("<binop>"),
+            } => allocator.text("<binop>"),
         }
     }
 }

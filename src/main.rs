@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 
+use ::pretty::{Pretty, RcAllocator};
 use chumsky::Parser as _;
 use clap::Parser;
 
@@ -48,7 +49,7 @@ fn main() -> anyhow::Result<()> {
             match parser::parser().parse(stream) {
                 Ok(program) => {
                     let mut out = vec![];
-                    program.to_doc().render(100, &mut out)?;
+                    program.pretty(&RcAllocator).render(100, &mut out)?;
                     println!("{}", String::from_utf8(out)?);
                 }
                 Err(errs) => {
