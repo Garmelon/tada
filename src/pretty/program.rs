@@ -23,7 +23,7 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Program {
                 .append(allocator.line())
                 .append(elems.pretty(
                     allocator,
-                    |a, e| a.text("<elem>"),
+                    |a, e| e.pretty(a),
                     |a, (s0, s1)| a.text(",").append(a.line()),
                     |a, s| a.text(","),
                 )),
