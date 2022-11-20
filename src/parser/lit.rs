@@ -87,12 +87,18 @@ fn string_lit_elem() -> impl Parser<char, StringLitElem, Error = Error> {
         .collect::<String>()
         .map(StringLitElem::Plain);
 
-    let unicode_char = num_lit_str_radix(16).try_map(|(n, _), span| {
-        let msg = "not a valid unicode code point";
-        let n: u32 = n.try_into().map_err(|_| Simple::custom(span, msg))?;
-        let c: char = n.try_into().map_err(|_| Simple::custom(span, msg))?;
-        Ok(c)
-    });
+    // The maximum unicode codepoint is 10ffff, which has 6 digits.
+    let unicode_char = filter(|c: &char| c.is_ascii_hexdigit())
+        .repeated()
+        .at_least(1)
+        .at_most(6)
+        .collect::<String>()
+        .try_map(|str, span| {
+            let msg = "not a valid unicode code point";
+            let n = u32::from_str_radix(&str, 16).unwrap();
+            let c: char = n.try_into().map_err(|_| Simple::custom(span, msg))?;
+            Ok(c)
+        });
     let unicode = just("\\u{")
         .ignore_then(unicode_char)
         .then_ignore(just('}'))
