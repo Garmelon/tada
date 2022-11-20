@@ -2,7 +2,9 @@
 
 use chumsky::prelude::*;
 
-use crate::ast::{Expr, Ident, Lit, NumLit, NumLitStr, Space, StringLit, TableLit, TableLitElem};
+use crate::ast::{
+    Expr, Ident, Lit, NumLit, NumLitStr, Space, StringLit, StringLitElem, TableLit, TableLitElem,
+};
 use crate::builtin::Builtin;
 
 use super::basic::{EParser, Error};
@@ -78,9 +80,43 @@ fn num_lit() -> impl Parser<char, NumLit, Error = Error> {
         .map_with_span(|(value, str), span| NumLit { value, str, span })
 }
 
+fn string_lit_elem() -> impl Parser<char, StringLitElem, Error = Error> {
+    let plain = filter(|c: &char| !matches!(c, '"' | '\\'))
+        .repeated()
+        .at_least(1)
+        .collect::<String>()
+        .map(StringLitElem::Plain);
+
+    let unicode_char = num_lit_str_radix(16).try_map(|(n, _), span| {
+        let msg = "not a valid unicode code point";
+        let n: u32 = n.try_into().map_err(|_| Simple::custom(span, msg))?;
+        let c: char = n.try_into().map_err(|_| Simple::custom(span, msg))?;
+        Ok(c)
+    });
+    let unicode = just("\\u{")
+        .ignore_then(unicode_char)
+        .then_ignore(just('}'))
+        .map(StringLitElem::Unicode);
+    let backslash = just("\\\\").to(StringLitElem::Backslash);
+    let double_quote = just("\\\"").to(StringLitElem::DoubleQuote);
+    let tab = just("\\t").to(StringLitElem::Tab);
+    let carriage_return = just("\\r").to(StringLitElem::CarriageReturn);
+    let newline = just("\\n").to(StringLitElem::Newline);
+
+    plain
+        .or(unicode)
+        .or(backslash)
+        .or(double_quote)
+        .or(tab)
+        .or(carriage_return)
+        .or(newline)
+}
+
 fn string_lit() -> impl Parser<char, StringLit, Error = Error> {
-    // TODO Parse string literals
-    filter(|_| false).map(|_| unreachable!())
+    string_lit_elem()
+        .repeated()
+        .delimited_by(just('"'), just('"'))
+        .map_with_span(|elems, span| StringLit { elems, span })
 }
 
 pub fn table_lit_elem(

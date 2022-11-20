@@ -61,8 +61,6 @@ pub enum StringLitElem {
     Unicode(char),
     /// `\\`
     Backslash,
-    /// `\'`
-    SingleQuote,
     /// `\"'`
     DoubleQuote,
     /// `\t`
@@ -77,8 +75,8 @@ pub enum StringLitElem {
 /// - `""`
 #[derive(Debug, Clone)]
 pub struct StringLit {
-    elems: Vec<StringLitElem>,
-    span: Span,
+    pub elems: Vec<StringLitElem>,
+    pub span: Span,
 }
 
 impl HasSpan for StringLit {
