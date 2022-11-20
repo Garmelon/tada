@@ -49,10 +49,10 @@ pub enum Var {
 impl HasSpan for Var {
     fn span(&self) -> Span {
         match self {
-            Var::Access { span, .. } => *span,
-            Var::Assign { span, .. } => *span,
-            Var::AccessIdent(ident) => ident.span(),
-            Var::AssignIdent { span, .. } => *span,
+            Self::Access { span, .. } => *span,
+            Self::Assign { span, .. } => *span,
+            Self::AccessIdent(ident) => ident.span(),
+            Self::AssignIdent { span, .. } => *span,
         }
     }
 }

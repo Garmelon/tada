@@ -60,10 +60,10 @@ pub enum Field {
 impl HasSpan for Field {
     fn span(&self) -> Span {
         match self {
-            Field::Access { span, .. } => *span,
-            Field::Assign { span, .. } => *span,
-            Field::AccessIdent { span, .. } => *span,
-            Field::AssignIdent { span, .. } => *span,
+            Self::Access { span, .. } => *span,
+            Self::Assign { span, .. } => *span,
+            Self::AccessIdent { span, .. } => *span,
+            Self::AssignIdent { span, .. } => *span,
         }
     }
 }

@@ -24,8 +24,8 @@ pub enum TableConstrElem {
 impl HasSpan for TableConstrElem {
     fn span(&self) -> Span {
         match self {
-            TableConstrElem::Lit(lit) => lit.span(),
-            TableConstrElem::Indexed { span, .. } => *span,
+            Self::Lit(lit) => lit.span(),
+            Self::Indexed { span, .. } => *span,
         }
     }
 }

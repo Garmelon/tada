@@ -25,8 +25,8 @@ pub enum Program {
 impl HasSpan for Program {
     fn span(&self) -> Span {
         match self {
-            Program::Expr { span, .. } => *span,
-            Program::Module { span, .. } => *span,
+            Self::Expr { span, .. } => *span,
+            Self::Module { span, .. } => *span,
         }
     }
 }

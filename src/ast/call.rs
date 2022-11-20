@@ -40,9 +40,9 @@ pub enum Call {
 impl HasSpan for Call {
     fn span(&self) -> Span {
         match self {
-            Call::Arg { span, .. } => *span,
-            Call::NoArg { span, .. } => *span,
-            Call::Constr { span, .. } => *span,
+            Self::Arg { span, .. } => *span,
+            Self::NoArg { span, .. } => *span,
+            Self::Constr { span, .. } => *span,
         }
     }
 }

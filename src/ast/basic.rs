@@ -62,8 +62,8 @@ pub enum Separated<E, S1, S2> {
 impl<E, S1, S2> HasSpan for Separated<E, S1, S2> {
     fn span(&self) -> Span {
         match self {
-            Separated::Empty(span) => *span,
-            Separated::NonEmpty { span, .. } => *span,
+            Self::Empty(span) => *span,
+            Self::NonEmpty { span, .. } => *span,
         }
     }
 }

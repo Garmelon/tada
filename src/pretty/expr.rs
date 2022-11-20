@@ -5,14 +5,14 @@ use crate::ast::Expr;
 impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Expr {
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
-            Expr::Lit(lit) => allocator.text("<lit>"),
-            Expr::Call(call) => allocator.text("<call>"),
-            Expr::Field(field) => allocator.text("<field>"),
-            Expr::Var(var) => allocator.text("<var>"),
-            Expr::TableConstr(constr) => allocator.text("<onstr>"),
-            Expr::TableDestr(destr) => allocator.text("<destr>"),
-            Expr::FuncDef(def) => allocator.text("<def>"),
-            Expr::Paren {
+            Self::Lit(lit) => allocator.text("<lit>"),
+            Self::Call(call) => allocator.text("<call>"),
+            Self::Field(field) => allocator.text("<field>"),
+            Self::Var(var) => allocator.text("<var>"),
+            Self::TableConstr(constr) => allocator.text("<onstr>"),
+            Self::TableDestr(destr) => allocator.text("<destr>"),
+            Self::FuncDef(def) => allocator.text("<def>"),
+            Self::Paren {
                 s0,
                 inner,
                 s1,
@@ -20,7 +20,7 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Expr {
             } => inner.pretty(allocator).parens(),
 
             // TODO Check whether parentheses are necessary
-            Expr::Neg {
+            Self::Neg {
                 minus: _,
                 s0,
                 expr,
@@ -28,14 +28,14 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Expr {
             } => allocator.text("-").append(expr.pretty(allocator)),
 
             // TODO Check whether parentheses are necessary
-            Expr::Not {
+            Self::Not {
                 not: _,
                 s0,
                 expr,
                 span: _,
             } => allocator.text("not ").append(expr.pretty(allocator)),
 
-            Expr::BinOp {
+            Self::BinOp {
                 left,
                 s0,
                 op,

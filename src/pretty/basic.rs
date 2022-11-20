@@ -17,8 +17,8 @@ impl<E, S1, S2> Separated<E, S1, S2> {
         FS2: Fn(&'a D, S2) -> DocBuilder<'a, D>,
     {
         match self {
-            Separated::Empty(_) => allocator.nil(),
-            Separated::NonEmpty {
+            Self::Empty(_) => allocator.nil(),
+            Self::NonEmpty {
                 first_elem,
                 last_elems,
                 trailing,

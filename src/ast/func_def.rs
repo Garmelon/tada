@@ -90,12 +90,12 @@ pub enum FuncDef {
 impl HasSpan for FuncDef {
     fn span(&self) -> Span {
         match self {
-            FuncDef::AnonNoArg { span, .. } => *span,
-            FuncDef::AnonArg { span, .. } => *span,
-            FuncDef::AnonDestr { span, .. } => *span,
-            FuncDef::NamedNoArg { span, .. } => *span,
-            FuncDef::NamedArg { span, .. } => *span,
-            FuncDef::NamedDestr { span, .. } => *span,
+            Self::AnonNoArg { span, .. } => *span,
+            Self::AnonArg { span, .. } => *span,
+            Self::AnonDestr { span, .. } => *span,
+            Self::NamedNoArg { span, .. } => *span,
+            Self::NamedArg { span, .. } => *span,
+            Self::NamedDestr { span, .. } => *span,
         }
     }
 }

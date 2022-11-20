@@ -119,8 +119,8 @@ pub enum TableLitElem {
 impl HasSpan for TableLitElem {
     fn span(&self) -> Span {
         match self {
-            TableLitElem::Positional(value) => value.span(),
-            TableLitElem::Named { span, .. } => *span,
+            Self::Positional(value) => value.span(),
+            Self::Named { span, .. } => *span,
         }
     }
 }
@@ -187,12 +187,12 @@ impl fmt::Debug for Lit {
 impl HasSpan for Lit {
     fn span(&self) -> Span {
         match self {
-            Lit::Nil(span) => *span,
-            Lit::Bool(_, span) => *span,
-            Lit::Builtin(_, span) => *span,
-            Lit::Num(n) => n.span(),
-            Lit::String(s) => s.span(),
-            Lit::Table(t) => t.span(),
+            Self::Nil(span) => *span,
+            Self::Bool(_, span) => *span,
+            Self::Builtin(_, span) => *span,
+            Self::Num(n) => n.span(),
+            Self::String(s) => s.span(),
+            Self::Table(t) => t.span(),
         }
     }
 }

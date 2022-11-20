@@ -5,13 +5,13 @@ use crate::ast::Program;
 impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Program {
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
-            Program::Expr {
+            Self::Expr {
                 s0,
                 expr,
                 s1,
                 span: _,
             } => expr.pretty(allocator),
-            Program::Module {
+            Self::Module {
                 s0,
                 s1,
                 elems,

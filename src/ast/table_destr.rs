@@ -24,8 +24,8 @@ pub enum TablePatternElem {
 impl HasSpan for TablePatternElem {
     fn span(&self) -> Span {
         match self {
-            TablePatternElem::Positional(ident) => ident.span(),
-            TablePatternElem::Named { span, .. } => *span,
+            Self::Positional(ident) => ident.span(),
+            Self::Named { span, .. } => *span,
         }
     }
 }

@@ -59,7 +59,7 @@ impl Suffix {
     fn into_expr(self, span: Span, expr: Expr) -> Expr {
         let expr = Box::new(expr);
         match self {
-            Suffix::CallArg { s0, s1, arg, s2 } => Expr::Call(Call::Arg {
+            Self::CallArg { s0, s1, arg, s2 } => Expr::Call(Call::Arg {
                 expr,
                 s0,
                 s1,
@@ -67,14 +67,14 @@ impl Suffix {
                 s2,
                 span,
             }),
-            Suffix::CallNoArg { s0, s1 } => Expr::Call(Call::NoArg { expr, s0, s1, span }),
-            Suffix::CallConstr { s0, constr } => Expr::Call(Call::Constr {
+            Self::CallNoArg { s0, s1 } => Expr::Call(Call::NoArg { expr, s0, s1, span }),
+            Self::CallConstr { s0, constr } => Expr::Call(Call::Constr {
                 expr,
                 s0,
                 constr,
                 span,
             }),
-            Suffix::FieldAccess { s0, s1, index, s2 } => Expr::Field(Field::Access {
+            Self::FieldAccess { s0, s1, index, s2 } => Expr::Field(Field::Access {
                 expr,
                 s0,
                 s1,
@@ -82,7 +82,7 @@ impl Suffix {
                 s2,
                 span,
             }),
-            Suffix::FieldAssign {
+            Self::FieldAssign {
                 s0,
                 s1,
                 index,
@@ -101,14 +101,14 @@ impl Suffix {
                 value,
                 span,
             }),
-            Suffix::FieldAccessIdent { s0, s1, ident } => Expr::Field(Field::AccessIdent {
+            Self::FieldAccessIdent { s0, s1, ident } => Expr::Field(Field::AccessIdent {
                 expr,
                 s0,
                 s1,
                 ident,
                 span,
             }),
-            Suffix::FieldAssignIdent {
+            Self::FieldAssignIdent {
                 s0,
                 s1,
                 ident,
