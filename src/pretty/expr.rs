@@ -26,7 +26,7 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Expr {
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
             Self::Lit(lit) => lit.pretty(allocator),
-            Self::Call(call) => allocator.text("<call>"),
+            Self::Call(call) => call.pretty(allocator),
             Self::Field(field) => allocator.text("<field>"),
             Self::Var(var) => allocator.text("<var>"),
             Self::TableConstr(constr) => constr.pretty(allocator),
