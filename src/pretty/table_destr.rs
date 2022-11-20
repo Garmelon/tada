@@ -27,9 +27,9 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TablePattern {
         self.elems
             .pretty(
                 allocator,
-                |a, e| a.line().append(e.pretty(a)),
-                |a, (s0, s1)| a.text(","),
-                |a, s| a.text(","),
+                |e| allocator.line().append(e.pretty(allocator)),
+                |(s0, s1)| allocator.text(","),
+                |s| allocator.text(","),
             )
             .nest(NEST_DEPTH)
             .append(allocator.line())

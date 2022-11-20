@@ -18,9 +18,9 @@ impl<E, S1, S2> Separated<E, S1, S2> {
     ) -> DocBuilder<'a, D>
     where
         D: DocAllocator<'a>,
-        FE: Fn(&'a D, E) -> DocBuilder<'a, D>,
-        FS1: Fn(&'a D, S1) -> DocBuilder<'a, D>,
-        FS2: Fn(&'a D, S2) -> DocBuilder<'a, D>,
+        FE: Fn(E) -> DocBuilder<'a, D>,
+        FS1: Fn(S1) -> DocBuilder<'a, D>,
+        FS2: Fn(S2) -> DocBuilder<'a, D>,
     {
         match self {
             Self::Empty(_) => allocator.nil(),
@@ -29,13 +29,17 @@ impl<E, S1, S2> Separated<E, S1, S2> {
                 last_elems,
                 trailing,
                 span: _span,
-            } => elem_to_doc(allocator, first_elem)
-                .append(allocator.concat(last_elems.into_iter().map(|(s, e)| {
-                    separator_to_doc(allocator, s).append(elem_to_doc(allocator, e))
-                })))
+            } => elem_to_doc(first_elem)
+                .append(
+                    allocator.concat(
+                        last_elems
+                            .into_iter()
+                            .map(|(s, e)| separator_to_doc(s).append(elem_to_doc(e))),
+                    ),
+                )
                 .append(
                     trailing
-                        .map(|s| trailing_separator_to_doc(allocator, s))
+                        .map(trailing_separator_to_doc)
                         .unwrap_or_else(|| allocator.nil()),
                 ),
         }
