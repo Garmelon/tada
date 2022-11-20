@@ -10,7 +10,7 @@ impl Program {
                 expr,
                 s1,
                 span: _,
-            } => RcDoc::text("<expr>"),
+            } => expr.to_doc(),
             Program::Module {
                 s0,
                 s1,
