@@ -81,7 +81,7 @@ fn num_lit() -> impl Parser<char, NumLit, Error = Error> {
 }
 
 fn string_lit_elem() -> impl Parser<char, StringLitElem, Error = Error> {
-    let plain = filter(|c: &char| !matches!(c, '"' | '\\'))
+    let plain = filter(|c: &char| !matches!(c, '\\' | '"' | '\t' | '\r' | '\n'))
         .repeated()
         .at_least(1)
         .collect::<String>()
