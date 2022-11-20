@@ -3,7 +3,7 @@ use std::fmt;
 use crate::builtin::Builtin;
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Ident, Space};
+use super::{Expr, Ident, Separated, Space};
 
 #[derive(Clone)]
 pub enum NumLitStr {
@@ -126,11 +126,13 @@ impl HasSpan for TableLitElem {
 }
 
 /// `'{ a, foo: b }`
+///
+/// Structure: `'{ s0 elems s1 }`
 #[derive(Debug, Clone)]
 pub struct TableLit {
-    pub elems: Vec<(Space, TableLitElem, Space)>,
-    /// `Some` if there is a trailing comma, `None` otherwise.
-    pub trailing_comma: Option<Space>,
+    pub s0: Space,
+    pub elems: Separated<TableLitElem, (Space, Space), Space>,
+    pub s1: Space,
     pub span: Span,
 }
 

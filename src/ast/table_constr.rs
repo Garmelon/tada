@@ -1,6 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Space, TableLitElem};
+use super::{Expr, Separated, Space, TableLitElem};
 
 #[derive(Debug, Clone)]
 pub enum TableConstrElem {
@@ -31,11 +31,13 @@ impl HasSpan for TableConstrElem {
 }
 
 /// `{ a, b, foo: c, [d]: e }`
+///
+/// Structure: `{ s0 elems s1 }`
 #[derive(Debug, Clone)]
 pub struct TableConstr {
-    pub elems: Vec<(Space, TableConstrElem, Space)>,
-    /// `Some` if there is a trailing comma, `None` otherwise.
-    pub trailing_comma: Option<Space>,
+    pub s0: Space,
+    pub elems: Separated<TableConstrElem, (Space, Space), Space>,
+    pub s1: Space,
     pub span: Span,
 }
 

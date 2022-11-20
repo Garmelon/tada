@@ -7,7 +7,7 @@ use crate::ast::{
 };
 use crate::builtin::Builtin;
 
-use super::basic::{EParser, Error};
+use super::basic::{separated_by, EParser, Error};
 
 fn builtin_lit() -> impl Parser<char, Builtin, Error = Error> {
     just('\'').ignore_then(choice((
@@ -154,22 +154,18 @@ fn table_lit(
     space: EParser<Space>,
     table_lit_elem: EParser<TableLitElem>,
 ) -> impl Parser<char, TableLit, Error = Error> {
-    let elem = space
+    let separator = space.clone().then_ignore(just(',')).then(space.clone());
+    let trailing_separator = space.clone().then_ignore(just(','));
+
+    space
         .clone()
-        .then(table_lit_elem)
-        .then(space.clone())
-        .map(|((s0, elem), s1)| (s0, elem, s1));
-
-    let trailing_comma = just(',').ignore_then(space).or_not();
-
-    let elems = elem.separated_by(just(',')).then(trailing_comma);
-
-    just("'{")
-        .ignore_then(elems)
-        .then_ignore(just('}'))
-        .map_with_span(|(elems, trailing_comma), span| TableLit {
+        .then(separated_by(table_lit_elem, separator, trailing_separator))
+        .then(space)
+        .delimited_by(just("'{"), just('}'))
+        .map_with_span(|((s0, elems), s1), span| TableLit {
+            s0,
             elems,
-            trailing_comma,
+            s1,
             span,
         })
 }

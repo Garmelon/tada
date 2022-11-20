@@ -47,3 +47,23 @@ impl HasSpan for Ident {
         self.span
     }
 }
+
+#[derive(Debug, Clone)]
+pub enum Separated<E, S1, S2> {
+    Empty(Span),
+    NonEmpty {
+        first_elem: E,
+        last_elems: Vec<(S1, E)>,
+        trailing: Option<S2>,
+        span: Span,
+    },
+}
+
+impl<E, S1, S2> HasSpan for Separated<E, S1, S2> {
+    fn span(&self) -> Span {
+        match self {
+            Separated::Empty(span) => *span,
+            Separated::NonEmpty { span, .. } => *span,
+        }
+    }
+}

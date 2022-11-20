@@ -1,6 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Ident, Space};
+use super::{Expr, Ident, Separated, Space};
 
 // TODO Make table patterns recursive
 
@@ -30,12 +30,14 @@ impl HasSpan for TablePatternElem {
     }
 }
 
-/// `'{ foo, bar: baz }`
+/// `{ foo, bar: baz }`
+///
+/// Structure: `{ s0 elems s1 }`
 #[derive(Debug, Clone)]
 pub struct TablePattern {
-    pub elems: Vec<(Space, TablePatternElem, Space)>,
-    /// `Some` if there is a trailing comma, `None` otherwise.
-    pub trailing_comma: Option<Space>,
+    pub s0: Space,
+    pub elems: Separated<TablePatternElem, (Space, Space), Space>,
+    pub s1: Space,
     pub span: Span,
 }
 

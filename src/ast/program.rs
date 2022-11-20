@@ -1,6 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Space, TableLitElem};
+use super::{Expr, Separated, Space, TableLitElem};
 
 #[derive(Debug, Clone)]
 pub enum Program {
@@ -12,12 +12,12 @@ pub enum Program {
         span: Span,
     },
 
-    /// Structure: `s0 module elems trailing_comma`
+    /// Structure: `s0 module s1 elems s2`
     Module {
         s0: Space,
-        elems: Vec<(Space, TableLitElem, Space)>,
-        /// `Some` if there is a trailing comma, `None` otherwise.
-        trailing_comma: Option<Space>,
+        s1: Space,
+        elems: Separated<TableLitElem, (Space, Space), Space>,
+        s2: Space,
         span: Span,
     },
 }

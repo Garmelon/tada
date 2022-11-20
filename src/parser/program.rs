@@ -4,7 +4,7 @@ use chumsky::prelude::*;
 
 use crate::ast::{Expr, Program, Space, TableLitElem};
 
-use super::basic::EParser;
+use super::basic::{separated_by, EParser};
 
 pub fn program(
     space: EParser<Space>,
@@ -17,20 +17,19 @@ pub fn program(
         .then(space.clone())
         .map_with_span(|((s0, expr), s1), span| Program::Expr { s0, expr, s1, span });
 
-    let elem = space
-        .clone()
-        .then(table_lit_elem)
-        .then(space.clone())
-        .map(|((s0, elem), s1)| (s0, elem, s1));
-    let trailing_comma = just(',').ignore_then(space.clone()).or_not();
+    let separator = space.clone().then_ignore(just(',')).then(space.clone());
+    let trailing_separator = space.clone().then_ignore(just(','));
     let module = space
+        .clone()
         .then_ignore(text::keyword("module"))
-        .then(elem.separated_by(just(',')))
-        .then(trailing_comma)
-        .map_with_span(|((s0, elems), trailing_comma), span| Program::Module {
+        .then(space.clone())
+        .then(separated_by(table_lit_elem, separator, trailing_separator))
+        .then(space.clone())
+        .map_with_span(|(((s0, s1), elems), s2), span| Program::Module {
             s0,
+            s1,
             elems,
-            trailing_comma,
+            s2,
             span,
         });
 

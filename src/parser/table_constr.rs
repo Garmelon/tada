@@ -4,13 +4,13 @@ use chumsky::prelude::*;
 
 use crate::ast::{Expr, Space, TableConstr, TableConstrElem, TableLitElem};
 
-use super::basic::{EParser, Error};
+use super::basic::{separated_by, EParser, Error};
 
 fn table_constr_elem(
     space: EParser<Space>,
     table_lit_elem: EParser<TableLitElem>,
     expr: EParser<Expr>,
-) -> impl Parser<char, TableConstrElem, Error = Error> {
+) -> impl Parser<char, TableConstrElem, Error = Error> + Clone {
     let lit = table_lit_elem.map(TableConstrElem::Lit);
 
     let indexed = just('[')
@@ -42,22 +42,19 @@ pub fn table_constr(
     table_lit_elem: EParser<TableLitElem>,
     expr: EParser<Expr>,
 ) -> EParser<TableConstr> {
-    let elem = space
+    let elem = table_constr_elem(space.clone(), table_lit_elem, expr);
+    let separator = space.clone().then_ignore(just(',')).then(space.clone());
+    let trailing_separator = space.clone().then_ignore(just(','));
+
+    space
         .clone()
-        .then(table_constr_elem(space.clone(), table_lit_elem, expr))
-        .then(space.clone())
-        .map(|((s0, elem), s1)| (s0, elem, s1));
-
-    let trailing_comma = just(',').ignore_then(space).or_not();
-
-    let elems = elem.separated_by(just(',')).then(trailing_comma);
-
-    just('{')
-        .ignore_then(elems)
-        .then_ignore(just('}'))
-        .map_with_span(|(elems, trailing_comma), span| TableConstr {
+        .then(separated_by(elem, separator, trailing_separator))
+        .then(space)
+        .delimited_by(just('{'), just('}'))
+        .map_with_span(|((s0, elems), s1), span| TableConstr {
+            s0,
             elems,
-            trailing_comma,
+            s1,
             span,
         })
         .boxed()
