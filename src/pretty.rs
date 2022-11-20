@@ -5,5 +5,6 @@ mod field;
 mod lit;
 mod program;
 mod table_constr;
+mod var;
 
 const NEST_DEPTH: isize = 4;
