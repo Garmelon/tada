@@ -1,7 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
 
-use ::pretty::{Pretty, RcAllocator};
 use chumsky::Parser as _;
 use clap::Parser;
 
@@ -48,17 +47,14 @@ fn main() -> anyhow::Result<()> {
             let stream = span::stream_from_str(&content);
             match parser::parser().parse(stream) {
                 Ok(program) => {
-                    println!("Successful parse");
-                    let doc = program.pretty(&RcAllocator);
                     let mut out = vec![];
-                    doc.render(100, &mut out)?;
-                    let str = String::from_utf8(out)?;
-                    println!("{str}");
+                    program.to_doc().render(100, &mut out)?;
+                    println!("{}", String::from_utf8(out)?);
                 }
                 Err(errs) => {
-                    println!("Parsing failed");
+                    eprintln!("Parsing failed");
                     for err in errs {
-                        println!("{err:?}");
+                        eprintln!("{err:?}");
                     }
                 }
             }
