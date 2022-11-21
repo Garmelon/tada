@@ -3,10 +3,14 @@ use crate::ast::Expr;
 impl Expr {
     pub fn desugar(self) -> (Self, bool) {
         match self {
-            Self::Lit(lit) => (Self::Lit(lit), false), // TODO Implement
+            Self::Lit(lit) => {
+                let (lit, desugared) = lit.desugar();
+                (Self::Lit(lit), desugared)
+            }
+
             Self::Call(call) => (Self::Call(call), false), // TODO Implement
             Self::Field(field) => (Self::Field(field), false), // TODO Implement
-            Self::Var(var) => (Self::Var(var), false), // TODO Implement
+            Self::Var(var) => (Self::Var(var), false),     // TODO Implement
             Self::TableConstr(constr) => (Self::TableConstr(constr), false), // TODO Implement
             Self::TableDestr(destr) => (Self::TableDestr(destr), false), // TODO Implement
             Self::FuncDef(def) => (Self::FuncDef(def), false), // TODO Implement
