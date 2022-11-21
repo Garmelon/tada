@@ -2,8 +2,6 @@ use pretty::{DocAllocator, DocBuilder, Pretty};
 
 use crate::ast::{Lit, NumLit, StringLit, StringLitElem, TableLit, TableLitElem};
 
-use super::NEST_DEPTH;
-
 impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for NumLit {
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         allocator.text(format!("{self:?}"))
@@ -32,7 +30,11 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for StringLit {
     }
 }
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TableLitElem {
+impl<'a, D> Pretty<'a, D> for TableLitElem
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
             Self::Positional(expr) => expr.pretty(allocator),
@@ -50,23 +52,27 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TableLitElem {
     }
 }
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TableLit {
+impl<'a, D> Pretty<'a, D> for TableLit
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
-        self.elems
-            .pretty(
-                allocator,
-                |e| allocator.line().append(e.pretty(allocator)),
-                |(s0, s1)| allocator.text(","),
-                |s| allocator.text(","),
-            )
-            .nest(NEST_DEPTH)
-            .append(allocator.line())
-            .enclose(allocator.text("'{"), allocator.text("}"))
-            .group()
+        self.0.pretty(
+            allocator,
+            allocator.text("'{"),
+            allocator.text("}"),
+            allocator.text(","),
+            |e| e.pretty(allocator),
+        )
     }
 }
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Lit {
+impl<'a, D> Pretty<'a, D> for Lit
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
             Self::Nil(_) => allocator.text("nil"),

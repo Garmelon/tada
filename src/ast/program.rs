@@ -1,6 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Separated, Space, TableLitElem};
+use super::{BoundedSeparated, Expr, Space, TableLitElem};
 
 #[derive(Debug, Clone)]
 pub enum Program {
@@ -12,12 +12,10 @@ pub enum Program {
         span: Span,
     },
 
-    /// Structure: `s0 module s1 elems s2`
+    /// Structure: `s0 module elems`
     Module {
         s0: Space,
-        s1: Space,
-        elems: Separated<TableLitElem, (Space, Space), Space>,
-        s2: Space,
+        elems: BoundedSeparated<TableLitElem>,
         span: Span,
     },
 }

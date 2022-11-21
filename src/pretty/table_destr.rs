@@ -38,7 +38,11 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TablePattern {
     }
 }
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TableDestr {
+impl<'a, D> Pretty<'a, D> for TableDestr
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         // TODO Handle spaces
         self.local

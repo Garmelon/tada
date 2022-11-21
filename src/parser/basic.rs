@@ -83,11 +83,11 @@ pub fn separated_by<E: 'static, S1: 'static, S2: 'static>(
         .boxed()
 }
 
-pub fn bounded_separated<E: 'static, R1, R2, R3>(
+pub fn bounded_separated<E: 'static>(
     space: impl Parser<char, Space, Error = Error> + Clone + 'static,
-    start: impl Parser<char, R1, Error = Error> + 'static,
-    end: impl Parser<char, R2, Error = Error> + 'static,
-    separator: impl Parser<char, R3, Error = Error> + 'static,
+    start: impl Parser<char, (), Error = Error> + 'static,
+    end: impl Parser<char, (), Error = Error> + 'static,
+    separator: impl Parser<char, (), Error = Error> + 'static,
     elem: impl Parser<char, E, Error = Error> + Clone + 'static,
 ) -> EParser<BoundedSeparated<E>> {
     start

@@ -22,7 +22,11 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for BinOp {
     }
 }
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Expr {
+impl<'a, D> Pretty<'a, D> for Expr
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
             Self::Lit(lit) => lit.pretty(allocator),

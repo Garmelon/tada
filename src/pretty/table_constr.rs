@@ -4,7 +4,11 @@ use crate::ast::{TableConstr, TableConstrElem};
 
 use super::NEST_DEPTH;
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TableConstrElem {
+impl<'a, D> Pretty<'a, D> for TableConstrElem
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
             Self::Lit(lit) => lit.pretty(allocator),
@@ -25,7 +29,11 @@ impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TableConstrElem {
     }
 }
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for TableConstr {
+impl<'a, D> Pretty<'a, D> for TableConstr
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         self.elems
             .pretty(

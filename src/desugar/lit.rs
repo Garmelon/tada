@@ -31,21 +31,8 @@ impl TableLitElem {
 
 impl TableLit {
     pub fn desugar(self) -> (Self, bool) {
-        let Self {
-            s0,
-            elems,
-            s1,
-            span,
-        } = self;
-
-        let (elems, desugared) = elems.desugar_elem(|e| e.desugar());
-        let new = Self {
-            s0,
-            elems,
-            s1,
-            span,
-        };
-        (new, desugared)
+        let (elems, desugared) = self.0.desugar(|e| e.desugar());
+        (Self(elems), desugared)
     }
 }
 

@@ -3,7 +3,7 @@ use std::fmt;
 use crate::builtin::Builtin;
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Ident, Separated, Space};
+use super::{BoundedSeparated, Expr, Ident, Space};
 
 #[derive(Clone)]
 pub enum NumLitStr {
@@ -129,16 +129,11 @@ impl HasSpan for TableLitElem {
 ///
 /// Structure: `'{ s0 elems s1 }`
 #[derive(Debug, Clone)]
-pub struct TableLit {
-    pub s0: Space,
-    pub elems: Separated<TableLitElem, (Space, Space), Space>,
-    pub s1: Space,
-    pub span: Span,
-}
+pub struct TableLit(pub BoundedSeparated<TableLitElem>);
 
 impl HasSpan for TableLit {
     fn span(&self) -> Span {
-        self.span
+        self.0.span()
     }
 }
 

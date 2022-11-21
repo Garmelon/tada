@@ -1,4 +1,4 @@
-use crate::ast::{Call, Expr, Ident, Lit, Separated, Space, TableLit, TableLitElem};
+use crate::ast::{BoundedSeparated, Call, Expr, Ident, Lit, Space, TableLit, TableLitElem};
 
 // TODO Add span for just the parentheses to ast, or limit span to parentheses
 
@@ -29,18 +29,15 @@ impl Call {
                     value: arg,
                     span,
                 };
-                let elems = Separated::NonEmpty {
-                    first_elem: call,
-                    last_elems: vec![((Space::empty(span), Space::empty(span)), arg)],
+                let elems = vec![
+                    (s0, call, Space::empty(span)),
+                    (Space::empty(span), arg, s2),
+                ];
+                let new = Expr::Lit(Lit::Table(TableLit(BoundedSeparated {
+                    elems,
                     trailing: None,
                     span,
-                };
-                let new = Expr::Lit(Lit::Table(TableLit {
-                    s0,
-                    elems,
-                    s1: s2,
-                    span,
-                }));
+                })));
                 (new, true)
             }
 

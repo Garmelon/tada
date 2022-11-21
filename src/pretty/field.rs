@@ -2,7 +2,11 @@ use pretty::{DocAllocator, DocBuilder, Pretty};
 
 use crate::ast::Field;
 
-impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Field {
+impl<'a, D> Pretty<'a, D> for Field
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
         match self {
             Self::Access {

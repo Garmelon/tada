@@ -9,24 +9,12 @@ impl Program {
                 (new, desugared)
             }
 
-            Self::Module {
-                s0,
-                s1,
-                elems,
-                s2,
-                span,
-            } => {
-                // `s0 module s1 elems s2`
-                // -> `s0 '{ s1 elems s2 } empty`
-                let table = TableLit {
-                    s0: s1,
-                    elems,
-                    s1: s2,
-                    span,
-                };
+            Self::Module { s0, elems, span } => {
+                // `s0 module elems`
+                // -> `s0 table`
                 let new = Self::Expr {
                     s0,
-                    expr: Expr::Lit(Lit::Table(table)),
+                    expr: Expr::Lit(Lit::Table(TableLit(elems))),
                     s1: Space::empty(span),
                     span,
                 };
