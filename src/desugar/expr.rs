@@ -8,9 +8,10 @@ impl Expr {
                 (Self::Lit(lit), desugared)
             }
 
-            Self::Call(call) => (Self::Call(call), false), // TODO Implement
+            Self::Call(call) => call.desugar(),
+
             Self::Field(field) => (Self::Field(field), false), // TODO Implement
-            Self::Var(var) => (Self::Var(var), false),     // TODO Implement
+            Self::Var(var) => (Self::Var(var), false),         // TODO Implement
             Self::TableConstr(constr) => (Self::TableConstr(constr), false), // TODO Implement
             Self::TableDestr(destr) => (Self::TableDestr(destr), false), // TODO Implement
             Self::FuncDef(def) => (Self::FuncDef(def), false), // TODO Implement
