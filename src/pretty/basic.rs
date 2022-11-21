@@ -1,6 +1,8 @@
 use pretty::{DocAllocator, DocBuilder, Pretty};
 
-use crate::ast::{Ident, Separated};
+use crate::ast::{BoundedSeparated, Ident, Separated};
+
+use super::NEST_DEPTH;
 
 impl<'a, D: DocAllocator<'a>> Pretty<'a, D> for Ident {
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
@@ -43,5 +45,34 @@ impl<E, S1, S2> Separated<E, S1, S2> {
                         .unwrap_or_else(|| allocator.nil()),
                 ),
         }
+    }
+}
+
+impl<E> BoundedSeparated<E> {
+    pub fn pretty<'a, D, FE>(
+        self,
+        allocator: &'a D,
+        start: DocBuilder<'a, D>,
+        end: DocBuilder<'a, D>,
+        separator: DocBuilder<'a, D>,
+        elem_pretty: FE,
+    ) -> DocBuilder<'a, D>
+    where
+        D: DocAllocator<'a>,
+        D::Doc: Clone,
+        FE: Fn(E) -> DocBuilder<'a, D>,
+    {
+        allocator
+            .intersperse(
+                self.elems
+                    .into_iter()
+                    .map(|(s0, elem, s1)| allocator.line().append(elem_pretty(elem))),
+                separator.clone(),
+            )
+            .append(self.trailing.map(|s| separator))
+            .nest(NEST_DEPTH)
+            .append(allocator.line())
+            .enclose(start, end)
+            .group()
     }
 }

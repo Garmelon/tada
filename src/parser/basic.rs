@@ -3,7 +3,7 @@
 use chumsky::prelude::*;
 use chumsky::text::Character;
 
-use crate::ast::{Ident, Line, Separated, Space};
+use crate::ast::{BoundedSeparated, Ident, Line, Separated, Space};
 use crate::span::Span;
 
 pub type Error = Simple<char, Span>;
@@ -79,6 +79,46 @@ pub fn separated_by<E: 'static, S1: 'static, S2: 'static>(
                 span,
             },
             None => Separated::Empty(span),
+        })
+        .boxed()
+}
+
+pub fn bounded_separated<E: 'static, R1, R2, R3>(
+    space: impl Parser<char, Space, Error = Error> + Clone + 'static,
+    start: impl Parser<char, R1, Error = Error> + 'static,
+    end: impl Parser<char, R2, Error = Error> + 'static,
+    separator: impl Parser<char, R3, Error = Error> + 'static,
+    elem: impl Parser<char, E, Error = Error> + Clone + 'static,
+) -> EParser<BoundedSeparated<E>> {
+    start
+        .ignore_then(space.clone())
+        .then(
+            elem.clone()
+                .then(space.clone())
+                .then_ignore(separator)
+                .then(space.clone())
+                .repeated(),
+        )
+        .then(elem.then(space).or_not())
+        .then_ignore(end)
+        .map_with_span(|((s0, first_elems), last_elem), span| {
+            let mut space_before_elem = s0;
+            let mut elems = vec![];
+            for ((elem, s1), s2) in first_elems {
+                elems.push((space_before_elem, elem, s1));
+                space_before_elem = s2;
+            }
+            let trailing = if let Some((elem, s1)) = last_elem {
+                elems.push((space_before_elem, elem, s1));
+                None
+            } else {
+                Some(space_before_elem)
+            };
+            BoundedSeparated {
+                elems,
+                trailing,
+                span,
+            }
         })
         .boxed()
 }

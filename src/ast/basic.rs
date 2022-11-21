@@ -96,3 +96,16 @@ impl<E, S1, S2> HasSpan for Separated<E, S1, S2> {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct BoundedSeparated<E> {
+    pub elems: Vec<(Space, E, Space)>,
+    pub trailing: Option<Space>,
+    pub span: Span,
+}
+
+impl<E> HasSpan for BoundedSeparated<E> {
+    fn span(&self) -> Span {
+        self.span
+    }
+}
