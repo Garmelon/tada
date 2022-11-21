@@ -5,7 +5,8 @@ impl Program {
         match self {
             Self::Expr { s0, expr, s1, span } => {
                 let (expr, desugared) = expr.desugar();
-                (Self::Expr { s0, expr, s1, span }, desugared)
+                let new = Self::Expr { s0, expr, s1, span };
+                (new, desugared)
             }
 
             Self::Module {
@@ -15,28 +16,18 @@ impl Program {
                 s2,
                 span,
             } => {
-                let (elems, desugared) = elems.desugar_elem(|e| e.desugar());
-                if desugared {
-                    let new = Self::Module {
-                        s0,
-                        s1,
-                        elems,
-                        s2,
-                        span,
-                    };
-                    return (new, true);
-                }
-
+                // `s0 module s1 elems s2`
+                // -> `s0 '{ s1 elems s2 } empty`
                 let table = TableLit {
                     s0: s1,
                     elems,
-                    s1: Space::empty(span),
+                    s1: s2,
                     span,
                 };
                 let new = Self::Expr {
                     s0,
                     expr: Expr::Lit(Lit::Table(table)),
-                    s1: s2,
+                    s1: Space::empty(span),
                     span,
                 };
                 (new, true)

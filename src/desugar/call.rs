@@ -13,44 +13,20 @@ impl Call {
                 s2,
                 span,
             } => {
-                let (expr, desugared) = expr.desugar();
-                if desugared {
-                    let new = Expr::Call(Self::Arg {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        arg,
-                        s2,
-                        span,
-                    });
-                    return (new, true);
-                }
-
-                let (arg, desugared) = arg.desugar();
-                if desugared {
-                    let new = Expr::Call(Self::Arg {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        arg: Box::new(arg),
-                        s2,
-                        span,
-                    });
-                    return (new, true);
-                }
-
+                // `expr s0 ( s1 arg s2 )`
+                // -> `'{ s0 call: expr, arg: s1 arg s2 }`
                 let call = TableLitElem::Named {
                     name: Ident::new("call", span),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
-                    value: Box::new(expr),
+                    value: expr,
                     span,
                 };
                 let arg = TableLitElem::Named {
                     name: Ident::new("arg", span),
                     s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    value: Box::new(arg),
+                    s1,
+                    value: arg,
                     span,
                 };
                 let elems = Separated::NonEmpty {
@@ -60,32 +36,22 @@ impl Call {
                     span,
                 };
                 let new = Expr::Lit(Lit::Table(TableLit {
-                    s0: Space::empty(span),
+                    s0,
                     elems,
-                    s1: Space::empty(span),
+                    s1: s2,
                     span,
                 }));
                 (new, true)
             }
 
             Self::NoArg { expr, s0, s1, span } => {
-                let (expr, desugared) = expr.desugar();
-                if desugared {
-                    let new = Expr::Call(Self::NoArg {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        span,
-                    });
-                    return (new, true);
-                }
-
-                let arg = Expr::Lit(Lit::Nil(span));
+                // `expr s0 ( s1 )`
+                // -> `expr s0 ( s1 nil )`
                 let new = Expr::Call(Self::Arg {
-                    expr: Box::new(expr),
+                    expr,
                     s0,
                     s1,
-                    arg: Box::new(arg),
+                    arg: Box::new(Expr::Lit(Lit::Nil(span))),
                     s2: Space::empty(span),
                     span,
                 });
@@ -98,23 +64,13 @@ impl Call {
                 constr,
                 span,
             } => {
-                let (expr, desugared) = expr.desugar();
-                if desugared {
-                    let new = Expr::Call(Self::Constr {
-                        expr: Box::new(expr),
-                        s0,
-                        constr,
-                        span,
-                    });
-                    return (new, true);
-                }
-
-                let arg = Expr::TableConstr(constr);
+                // `expr s0 {..}`
+                // -> `expr s0 ( {..} )`
                 let new = Expr::Call(Self::Arg {
-                    expr: Box::new(expr),
+                    expr,
                     s0,
                     s1: Space::empty(span),
-                    arg: Box::new(arg),
+                    arg: Box::new(Expr::TableConstr(constr)),
                     s2: Space::empty(span),
                     span,
                 });

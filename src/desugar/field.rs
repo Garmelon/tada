@@ -1,5 +1,5 @@
 use crate::ast::{
-    Call, Expr, Field, Lit, Separated, Space, TableConstr, TableConstrElem, TableLitElem,
+    Call, Expr, Field, Line, Lit, Separated, Space, TableConstr, TableConstrElem, TableLitElem,
 };
 use crate::builtin::Builtin;
 
@@ -14,37 +14,13 @@ impl Field {
                 s2,
                 span,
             } => {
-                let (expr, desugared) = expr.desugar();
-                if desugared {
-                    let new = Expr::Field(Self::Access {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        index,
-                        s2,
-                        span,
-                    });
-                    return (new, true);
-                }
-
-                let (index, desugared) = index.desugar();
-                if desugared {
-                    let new = Expr::Field(Self::Access {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        index: Box::new(index),
-                        s2,
-                        span,
-                    });
-                    return (new, true);
-                }
-
+                // ` expr s0 [ s1 index s2 ]`
+                // -> `'get s0 { expr, s1 index s2 }`
                 let elems = Separated::NonEmpty {
-                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(Box::new(expr))),
+                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(expr)),
                     last_elems: vec![(
-                        (Space::empty(span), Space::empty(span)),
-                        TableConstrElem::Lit(TableLitElem::Positional(Box::new(index))),
+                        (Space::empty(span), s1),
+                        TableConstrElem::Lit(TableLitElem::Positional(index)),
                     )],
                     trailing: None,
                     span,
@@ -52,12 +28,12 @@ impl Field {
                 let constr = TableConstr {
                     s0: Space::empty(span),
                     elems,
-                    s1: Space::empty(span),
+                    s1: s2,
                     span,
                 };
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Get, span))),
-                    s0: Space::empty(span),
+                    s0,
                     constr,
                     span,
                 });
@@ -75,64 +51,18 @@ impl Field {
                 value,
                 span,
             } => {
-                let (expr, desugared) = expr.desugar();
-                if desugared {
-                    let new = Expr::Field(Self::Assign {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        index,
-                        s2,
-                        s3,
-                        s4,
-                        value,
-                        span,
-                    });
-                    return (new, true);
-                }
-
-                let (index, desugared) = index.desugar();
-                if desugared {
-                    let new = Expr::Field(Self::Assign {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        index: Box::new(index),
-                        s2,
-                        s3,
-                        s4,
-                        value,
-                        span,
-                    });
-                    return (new, true);
-                }
-
-                let (value, desugared) = value.desugar();
-                if desugared {
-                    let new = Expr::Field(Self::Assign {
-                        expr: Box::new(expr),
-                        s0,
-                        s1,
-                        index: Box::new(index),
-                        s2,
-                        s3,
-                        s4,
-                        value: Box::new(value),
-                        span,
-                    });
-                    return (new, true);
-                }
-
+                // `expr s0 [ s1 index s2 ] s3 = s4 value`
+                // -> `'set s0 { expr, s1 index s2, s3 s4 value }`
                 let elems = Separated::NonEmpty {
-                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(Box::new(expr))),
+                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(expr)),
                     last_elems: vec![
                         (
-                            (Space::empty(span), Space::empty(span)),
-                            TableConstrElem::Lit(TableLitElem::Positional(Box::new(index))),
+                            (Space::empty(span), s1),
+                            TableConstrElem::Lit(TableLitElem::Positional(index)),
                         ),
                         (
-                            (Space::empty(span), Space::empty(span)),
-                            TableConstrElem::Lit(TableLitElem::Positional(Box::new(value))),
+                            (s2, s3.then_line(Line::Empty).then(s4)),
+                            TableConstrElem::Lit(TableLitElem::Positional(value)),
                         ),
                     ],
                     trailing: None,
@@ -146,7 +76,7 @@ impl Field {
                 };
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Set, span))),
-                    s0: Space::empty(span),
+                    s0,
                     constr,
                     span,
                 });

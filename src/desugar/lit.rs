@@ -7,6 +7,7 @@ impl TableLitElem {
                 let (expr, desugared) = expr.desugar();
                 (Self::Positional(Box::new(expr)), desugared)
             }
+
             Self::Named {
                 name,
                 s0,
@@ -30,12 +31,19 @@ impl TableLitElem {
 
 impl TableLit {
     pub fn desugar(self) -> (Self, bool) {
-        let (elems, desugared) = self.elems.desugar_elem(|e| e.desugar());
-        let new = Self {
-            s0: self.s0,
+        let Self {
+            s0,
             elems,
-            s1: self.s1,
-            span: self.span,
+            s1,
+            span,
+        } = self;
+
+        let (elems, desugared) = elems.desugar_elem(|e| e.desugar());
+        let new = Self {
+            s0,
+            elems,
+            s1,
+            span,
         };
         (new, desugared)
     }
@@ -48,6 +56,7 @@ impl Lit {
                 let (table, desugared) = table.desugar();
                 (Self::Table(table), desugared)
             }
+
             lit => (lit, false),
         }
     }
