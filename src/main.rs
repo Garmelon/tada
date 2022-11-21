@@ -17,12 +17,13 @@
 use std::fs;
 use std::path::PathBuf;
 
-use ::pretty::{Pretty, RcAllocator};
+use anyhow::anyhow;
 use chumsky::Parser as _;
 use clap::Parser;
 
 mod ast;
 mod builtin;
+mod desugar;
 mod parser;
 mod pretty;
 mod span;
@@ -33,6 +34,7 @@ mod value;
 enum Command {
     Parse { file: PathBuf },
     Pretty { file: PathBuf },
+    Desugar { file: PathBuf },
 }
 
 #[derive(Parser)]
@@ -59,21 +61,37 @@ fn main() -> anyhow::Result<()> {
                 }
             }
         }
+
         Command::Pretty { file } => {
             let content = fs::read_to_string(&file)?;
             let stream = span::stream_from_str(&content);
-            match parser::parser().parse(stream) {
-                Ok(program) => {
-                    let mut out = vec![];
-                    program.pretty(&RcAllocator).render(100, &mut out)?;
-                    println!("{}", String::from_utf8(out)?);
+            let program = parser::parser()
+                .parse(stream)
+                .map_err(|e| anyhow!("{e:?}"))?;
+
+            println!("{}", pretty::pretty_to_string(program, 100));
+        }
+
+        Command::Desugar { file } => {
+            let content = fs::read_to_string(&file)?;
+            let stream = span::stream_from_str(&content);
+            let mut program = parser::parser()
+                .parse(stream)
+                .map_err(|e| anyhow!("{e:?}"))?;
+
+            println!("{}", pretty::pretty_to_string(program.clone(), 100));
+
+            loop {
+                let (new_program, desugared) = program.desugar();
+                program = new_program;
+                if !desugared {
+                    break;
                 }
-                Err(errs) => {
-                    eprintln!("Parsing failed");
-                    for err in errs {
-                        eprintln!("{err:?}");
-                    }
-                }
+
+                println!();
+                println!("================================================================================");
+                println!();
+                println!("{}", pretty::pretty_to_string(program.clone(), 100));
             }
         }
     }

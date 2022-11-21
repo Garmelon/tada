@@ -30,6 +30,15 @@ impl HasSpan for Space {
     }
 }
 
+impl Space {
+    pub fn empty(span: Span) -> Self {
+        Self {
+            lines: vec![],
+            span,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Ident {
     pub name: String,
