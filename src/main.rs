@@ -14,8 +14,9 @@
 // Clippy lints
 #![warn(clippy::use_self)]
 
-use std::fs;
+use std::io::Write;
 use std::path::PathBuf;
+use std::{fs, process};
 
 use anyhow::anyhow;
 use chumsky::Parser as _;
@@ -32,9 +33,19 @@ mod value;
 
 #[derive(Parser)]
 enum Command {
-    Parse { file: PathBuf },
-    Pretty { file: PathBuf },
-    Desugar { file: PathBuf },
+    Parse {
+        file: PathBuf,
+    },
+    Pretty {
+        file: PathBuf,
+    },
+    Desugar {
+        file: PathBuf,
+        #[arg(long, short, default_value = "diff")]
+        difftool: String,
+        #[arg(long, short = 'a')]
+        diffarg: Vec<String>,
+    },
 }
 
 #[derive(Parser)]
@@ -72,14 +83,23 @@ fn main() -> anyhow::Result<()> {
             println!("{}", pretty::pretty_to_string(program, 100));
         }
 
-        Command::Desugar { file } => {
+        Command::Desugar {
+            file,
+            difftool,
+            diffarg,
+        } => {
             let content = fs::read_to_string(&file)?;
             let stream = span::stream_from_str(&content);
             let mut program = parser::parser()
                 .parse(stream)
                 .map_err(|e| anyhow!("{e:?}"))?;
 
-            println!("{}", pretty::pretty_to_string(program.clone(), 100));
+            let mut builder = tempfile::Builder::new();
+            builder.suffix(".tada");
+
+            let mut prev = builder.tempfile()?;
+            prev.write_all(pretty::pretty_to_string(program.clone(), 100).as_bytes())?;
+            prev.flush()?;
 
             loop {
                 let (new_program, desugared) = program.desugar();
@@ -88,10 +108,18 @@ fn main() -> anyhow::Result<()> {
                     break;
                 }
 
-                println!();
-                println!("================================================================================");
-                println!();
-                println!("{}", pretty::pretty_to_string(program.clone(), 100));
+                let mut cur = builder.tempfile()?;
+                cur.write_all(pretty::pretty_to_string(program.clone(), 100).as_bytes())?;
+                cur.flush()?;
+
+                process::Command::new(&difftool)
+                    .args(&diffarg)
+                    .arg(prev.path())
+                    .arg(cur.path())
+                    .spawn()?
+                    .wait()?;
+
+                prev = cur;
             }
         }
     }
