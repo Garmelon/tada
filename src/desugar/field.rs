@@ -1,5 +1,6 @@
 use crate::ast::{
-    Call, Expr, Field, Line, Lit, Separated, Space, TableConstr, TableConstrElem, TableLitElem,
+    Call, Expr, Field, Line, Lit, Separated, Space, StringLit, StringLitElem, TableConstr,
+    TableConstrElem, TableLitElem,
 };
 use crate::builtin::Builtin;
 
@@ -90,14 +91,21 @@ impl Field {
                 ident,
                 span,
             } => {
-                let new = Expr::Field(Self::AccessIdent {
+                // `expr s0 . s1 ident´
+                // -> `expr s0 [ s1 ident_str ]`
+                let ident_str = Expr::Lit(Lit::String(StringLit {
+                    elems: vec![StringLitElem::Plain(ident.name)],
+                    span,
+                }));
+                let new = Expr::Field(Self::Access {
                     expr,
                     s0,
                     s1,
-                    ident,
+                    index: Box::new(ident_str),
+                    s2: Space::empty(span),
                     span,
                 });
-                (new, false) // TODO Implement
+                (new, true)
             }
 
             Self::AssignIdent {
