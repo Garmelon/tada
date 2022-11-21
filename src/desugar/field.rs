@@ -75,18 +75,82 @@ impl Field {
                 value,
                 span,
             } => {
-                let new = Expr::Field(Self::Assign {
-                    expr,
-                    s0,
-                    s1,
-                    index,
-                    s2,
-                    s3,
-                    s4,
-                    value,
+                let (expr, desugared) = expr.desugar();
+                if desugared {
+                    let new = Expr::Field(Self::Assign {
+                        expr: Box::new(expr),
+                        s0,
+                        s1,
+                        index,
+                        s2,
+                        s3,
+                        s4,
+                        value,
+                        span,
+                    });
+                    return (new, true);
+                }
+
+                let (index, desugared) = index.desugar();
+                if desugared {
+                    let new = Expr::Field(Self::Assign {
+                        expr: Box::new(expr),
+                        s0,
+                        s1,
+                        index: Box::new(index),
+                        s2,
+                        s3,
+                        s4,
+                        value,
+                        span,
+                    });
+                    return (new, true);
+                }
+
+                let (value, desugared) = value.desugar();
+                if desugared {
+                    let new = Expr::Field(Self::Assign {
+                        expr: Box::new(expr),
+                        s0,
+                        s1,
+                        index: Box::new(index),
+                        s2,
+                        s3,
+                        s4,
+                        value: Box::new(value),
+                        span,
+                    });
+                    return (new, true);
+                }
+
+                let elems = Separated::NonEmpty {
+                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(Box::new(expr))),
+                    last_elems: vec![
+                        (
+                            (Space::empty(span), Space::empty(span)),
+                            TableConstrElem::Lit(TableLitElem::Positional(Box::new(index))),
+                        ),
+                        (
+                            (Space::empty(span), Space::empty(span)),
+                            TableConstrElem::Lit(TableLitElem::Positional(Box::new(value))),
+                        ),
+                    ],
+                    trailing: None,
+                    span,
+                };
+                let constr = TableConstr {
+                    s0: Space::empty(span),
+                    elems,
+                    s1: Space::empty(span),
+                    span,
+                };
+                let new = Expr::Call(Call::Constr {
+                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Set, span))),
+                    s0: Space::empty(span),
+                    constr,
                     span,
                 });
-                (new, true) // TODO Implement
+                (new, true)
             }
 
             Self::AccessIdent {
