@@ -5,7 +5,7 @@ impl Program {
     pub fn desugar(self) -> (Self, bool) {
         match self {
             Self::Expr { s0, expr, s1, span } => {
-                let (expr, desugared) = (expr, false); // TODO Implement
+                let (expr, desugared) = expr.desugar();
                 (Self::Expr { s0, expr, s1, span }, desugared)
             }
 
