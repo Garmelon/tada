@@ -1,3 +1,5 @@
+use chumsky::Span;
+
 use crate::ast::{Call, Expr, Lit, Space};
 use crate::span::HasSpan;
 
@@ -54,13 +56,28 @@ impl Call {
                 constr,
                 span,
             } => {
-                let new = Expr::Call(Self::Constr {
-                    expr,
+                let (expr, desugared) = expr.desugar();
+                if desugared {
+                    let new = Expr::Call(Self::Constr {
+                        expr: Box::new(expr),
+                        s0,
+                        constr,
+                        span,
+                    });
+                    return (new, true);
+                }
+
+                let arg = Expr::TableConstr(constr);
+                let arg_span = arg.span();
+                let new = Expr::Call(Self::Arg {
+                    expr: Box::new(expr),
                     s0,
-                    constr,
+                    s1: Space::empty(arg_span.at_start()),
+                    arg: Box::new(arg),
+                    s2: Space::empty(arg_span.at_end()),
                     span,
                 });
-                (new, false) // TODO Implement
+                (new, true)
             }
         }
     }
