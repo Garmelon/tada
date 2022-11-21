@@ -45,6 +45,15 @@ pub struct Ident {
     pub span: Span,
 }
 
+impl Ident {
+    pub fn new<S: ToString>(name: S, span: Span) -> Self {
+        Self {
+            name: name.to_string(),
+            span,
+        }
+    }
+}
+
 impl fmt::Debug for Ident {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "i#{}", self.name)

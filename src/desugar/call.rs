@@ -1,7 +1,7 @@
-use chumsky::Span;
-
-use crate::ast::{Call, Expr, Lit, Space};
+use crate::ast::{Call, Expr, Ident, Lit, Separated, Space, TableLit, TableLitElem};
 use crate::span::HasSpan;
+
+// TODO Add span for just the parentheses to ast, or limit span to parentheses
 
 impl Call {
     pub fn desugar(self) -> (Expr, bool) {
@@ -14,15 +14,59 @@ impl Call {
                 s2,
                 span,
             } => {
-                let new = Expr::Call(Self::Arg {
-                    expr,
-                    s0,
-                    s1,
-                    arg,
-                    s2,
+                let (expr, desugared) = expr.desugar();
+                if desugared {
+                    let new = Expr::Call(Self::Arg {
+                        expr: Box::new(expr),
+                        s0,
+                        s1,
+                        arg,
+                        s2,
+                        span,
+                    });
+                    return (new, true);
+                }
+
+                let (arg, desugared) = arg.desugar();
+                if desugared {
+                    let new = Expr::Call(Self::Arg {
+                        expr: Box::new(expr),
+                        s0,
+                        s1,
+                        arg: Box::new(arg),
+                        s2,
+                        span,
+                    });
+                    return (new, true);
+                }
+
+                let call = TableLitElem::Named {
+                    name: Ident::new("call", span),
+                    s0: Space::empty(span),
+                    s1: Space::empty(span),
+                    value: Box::new(expr),
                     span,
-                });
-                (new, false) // TODO Implement
+                };
+                let arg = TableLitElem::Named {
+                    name: Ident::new("arg", span),
+                    s0: Space::empty(span),
+                    s1: Space::empty(span),
+                    value: Box::new(arg),
+                    span,
+                };
+                let elems = Separated::NonEmpty {
+                    first_elem: call,
+                    last_elems: vec![((Space::empty(span), Space::empty(span)), arg)],
+                    trailing: None,
+                    span,
+                };
+                let new = Expr::Lit(Lit::Table(TableLit {
+                    s0: Space::empty(span),
+                    elems,
+                    s1: Space::empty(span),
+                    span,
+                }));
+                (new, true)
             }
 
             Self::NoArg { expr, s0, s1, span } => {
