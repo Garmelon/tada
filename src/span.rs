@@ -24,14 +24,6 @@ impl Span {
         let end = self.end.max(other.end);
         Self::new(start, end)
     }
-
-    pub fn at_start(self) -> Self {
-        Self::new(self.start, self.start)
-    }
-
-    pub fn at_end(self) -> Self {
-        Self::new(self.end, self.end)
-    }
 }
 
 impl fmt::Debug for Span {

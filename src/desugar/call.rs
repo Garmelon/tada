@@ -1,5 +1,4 @@
 use crate::ast::{Call, Expr, Ident, Lit, Separated, Space, TableLit, TableLitElem};
-use crate::span::HasSpan;
 
 // TODO Add span for just the parentheses to ast, or limit span to parentheses
 
@@ -81,14 +80,13 @@ impl Call {
                     return (new, true);
                 }
 
-                let arg_span = s1.span().at_start();
-                let arg = Expr::Lit(Lit::Nil(arg_span));
+                let arg = Expr::Lit(Lit::Nil(span));
                 let new = Expr::Call(Self::Arg {
                     expr: Box::new(expr),
                     s0,
                     s1,
                     arg: Box::new(arg),
-                    s2: Space::empty(arg_span.at_end()),
+                    s2: Space::empty(span),
                     span,
                 });
                 (new, true)
@@ -112,13 +110,12 @@ impl Call {
                 }
 
                 let arg = Expr::TableConstr(constr);
-                let arg_span = arg.span();
                 let new = Expr::Call(Self::Arg {
                     expr: Box::new(expr),
                     s0,
-                    s1: Space::empty(arg_span.at_start()),
+                    s1: Space::empty(span),
                     arg: Box::new(arg),
-                    s2: Space::empty(arg_span.at_end()),
+                    s2: Space::empty(span),
                     span,
                 });
                 (new, true)

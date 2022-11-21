@@ -1,5 +1,4 @@
 use crate::ast::{Expr, Lit, Program, Space, TableLit};
-use crate::span::HasSpan;
 
 impl Program {
     pub fn desugar(self) -> (Self, bool) {
@@ -25,23 +24,22 @@ impl Program {
                         s2,
                         span,
                     };
-                    (new, true)
-                } else {
-                    let elems_span = elems.span();
-                    let table = TableLit {
-                        s0: s1,
-                        elems,
-                        s1: Space::empty(elems_span.at_end()),
-                        span: elems_span,
-                    };
-                    let new = Self::Expr {
-                        s0,
-                        expr: Expr::Lit(Lit::Table(table)),
-                        s1: s2,
-                        span,
-                    };
-                    (new, true)
+                    return (new, true);
                 }
+
+                let table = TableLit {
+                    s0: s1,
+                    elems,
+                    s1: Space::empty(span),
+                    span,
+                };
+                let new = Self::Expr {
+                    s0,
+                    expr: Expr::Lit(Lit::Table(table)),
+                    s1: s2,
+                    span,
+                };
+                (new, true)
             }
         }
     }
