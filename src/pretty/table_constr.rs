@@ -2,8 +2,6 @@ use pretty::{DocAllocator, DocBuilder, Pretty};
 
 use crate::ast::{TableConstr, TableConstrElem};
 
-use super::NEST_DEPTH;
-
 impl<'a, D> Pretty<'a, D> for TableConstrElem
 where
     D: DocAllocator<'a>,
@@ -35,16 +33,12 @@ where
     D::Doc: Clone,
 {
     fn pretty(self, allocator: &'a D) -> DocBuilder<'a, D> {
-        self.elems
-            .pretty(
-                allocator,
-                |e| allocator.line().append(e.pretty(allocator)),
-                |(s0, s1)| allocator.text(","),
-                |s| allocator.text(","),
-            )
-            .nest(NEST_DEPTH)
-            .append(allocator.line())
-            .braces()
-            .group()
+        self.0.pretty(
+            allocator,
+            allocator.text("{"),
+            allocator.text("}"),
+            allocator.text(","),
+            |e| e.pretty(allocator),
+        )
     }
 }

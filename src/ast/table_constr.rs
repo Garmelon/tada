@@ -1,6 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Separated, Space, TableLitElem};
+use super::{BoundedSeparated, Expr, Space, TableLitElem};
 
 #[derive(Debug, Clone)]
 pub enum TableConstrElem {
@@ -31,18 +31,11 @@ impl HasSpan for TableConstrElem {
 }
 
 /// `{ a, b, foo: c, [d]: e }`
-///
-/// Structure: `{ s0 elems s1 }`
 #[derive(Debug, Clone)]
-pub struct TableConstr {
-    pub s0: Space,
-    pub elems: Separated<TableConstrElem, (Space, Space), Space>,
-    pub s1: Space,
-    pub span: Span,
-}
+pub struct TableConstr(pub BoundedSeparated<TableConstrElem>);
 
 impl HasSpan for TableConstr {
     fn span(&self) -> Span {
-        self.span
+        self.0.span()
     }
 }

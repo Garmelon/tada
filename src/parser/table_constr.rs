@@ -4,7 +4,7 @@ use chumsky::prelude::*;
 
 use crate::ast::{Expr, Space, TableConstr, TableConstrElem, TableLitElem};
 
-use super::basic::{separated_by, EParser, Error};
+use super::basic::{bounded_separated, EParser, Error};
 
 fn table_constr_elem(
     space: EParser<Space>,
@@ -43,19 +43,13 @@ pub fn table_constr(
     expr: EParser<Expr>,
 ) -> EParser<TableConstr> {
     let elem = table_constr_elem(space.clone(), table_lit_elem, expr);
-    let separator = space.clone().then_ignore(just(',')).then(space.clone());
-    let trailing_separator = space.clone().then_ignore(just(','));
-
-    space
-        .clone()
-        .then(separated_by(elem, separator, trailing_separator))
-        .then(space)
-        .delimited_by(just('{'), just('}'))
-        .map_with_span(|((s0, elems), s1), span| TableConstr {
-            s0,
-            elems,
-            s1,
-            span,
-        })
-        .boxed()
+    bounded_separated(
+        space,
+        just('{').to(()),
+        just('}').to(()),
+        just(',').to(()),
+        elem,
+    )
+    .map(TableConstr)
+    .boxed()
 }

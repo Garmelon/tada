@@ -126,8 +126,6 @@ impl HasSpan for TableLitElem {
 }
 
 /// `'{ a, foo: b }`
-///
-/// Structure: `'{ s0 elems s1 }`
 #[derive(Debug, Clone)]
 pub struct TableLit(pub BoundedSeparated<TableLitElem>);
 

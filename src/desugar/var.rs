@@ -1,5 +1,5 @@
 use crate::ast::{
-    Call, Expr, Field, Line, Lit, Separated, Space, StringLit, StringLitElem, TableConstr,
+    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, StringLitElem, TableConstr,
     TableConstrElem, TableLitElem, Var,
 };
 use crate::builtin::Builtin;
@@ -83,31 +83,31 @@ impl Var {
                     s1: Space::empty(span),
                     span,
                 });
-                let elems = Separated::NonEmpty {
-                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(Box::new(scope))),
-                    last_elems: vec![
-                        (
-                            (Space::empty(span), local.then_line(Line::Empty).then(s0)),
-                            TableConstrElem::Lit(TableLitElem::Positional(index)),
-                        ),
-                        (
-                            (s1, s2.then_line(Line::Empty).then(s3)),
-                            TableConstrElem::Lit(TableLitElem::Positional(value)),
-                        ),
-                    ],
-                    trailing: None,
-                    span,
-                };
-                let constr = TableConstr {
-                    s0: Space::empty(span),
-                    elems,
-                    s1: Space::empty(span),
-                    span,
-                };
+                let elems = vec![
+                    (
+                        Space::empty(span),
+                        TableConstrElem::Lit(TableLitElem::Positional(Box::new(scope))),
+                        Space::empty(span),
+                    ),
+                    (
+                        local.then_line(Line::Empty).then(s0),
+                        TableConstrElem::Lit(TableLitElem::Positional(index)),
+                        s1,
+                    ),
+                    (
+                        s2.then_line(Line::Empty).then(s3),
+                        TableConstrElem::Lit(TableLitElem::Positional(value)),
+                        Space::empty(span),
+                    ),
+                ];
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::SetRaw, span))),
                     s0: Space::empty(span),
-                    constr,
+                    constr: TableConstr(BoundedSeparated {
+                        elems,
+                        trailing: None,
+                        span,
+                    }),
                     span,
                 });
                 (new, true)

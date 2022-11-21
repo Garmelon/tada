@@ -1,5 +1,5 @@
 use crate::ast::{
-    Call, Expr, Field, Line, Lit, Separated, Space, StringLit, StringLitElem, TableConstr,
+    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, StringLitElem, TableConstr,
     TableConstrElem, TableLitElem,
 };
 use crate::builtin::Builtin;
@@ -17,25 +17,26 @@ impl Field {
             } => {
                 // ` expr s0 [ s1 index s2 ]`
                 // -> `'get s0 { expr, s1 index s2 }`
-                let elems = Separated::NonEmpty {
-                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(expr)),
-                    last_elems: vec![(
-                        (Space::empty(span), s1),
+                let elems = vec![
+                    (
+                        Space::empty(span),
+                        TableConstrElem::Lit(TableLitElem::Positional(expr)),
+                        Space::empty(span),
+                    ),
+                    (
+                        s1,
                         TableConstrElem::Lit(TableLitElem::Positional(index)),
-                    )],
-                    trailing: None,
-                    span,
-                };
-                let constr = TableConstr {
-                    s0: Space::empty(span),
-                    elems,
-                    s1: s2,
-                    span,
-                };
+                        s2,
+                    ),
+                ];
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Get, span))),
                     s0,
-                    constr,
+                    constr: TableConstr(BoundedSeparated {
+                        elems,
+                        trailing: None,
+                        span,
+                    }),
                     span,
                 });
                 (new, true)
@@ -54,31 +55,31 @@ impl Field {
             } => {
                 // `expr s0 [ s1 index s2 ] s3 = s4 value`
                 // -> `'set s0 { expr, s1 index s2, s3 s4 value }`
-                let elems = Separated::NonEmpty {
-                    first_elem: TableConstrElem::Lit(TableLitElem::Positional(expr)),
-                    last_elems: vec![
-                        (
-                            (Space::empty(span), s1),
-                            TableConstrElem::Lit(TableLitElem::Positional(index)),
-                        ),
-                        (
-                            (s2, s3.then_line(Line::Empty).then(s4)),
-                            TableConstrElem::Lit(TableLitElem::Positional(value)),
-                        ),
-                    ],
-                    trailing: None,
-                    span,
-                };
-                let constr = TableConstr {
-                    s0: Space::empty(span),
-                    elems,
-                    s1: Space::empty(span),
-                    span,
-                };
+                let elems = vec![
+                    (
+                        Space::empty(span),
+                        TableConstrElem::Lit(TableLitElem::Positional(expr)),
+                        Space::empty(span),
+                    ),
+                    (
+                        s1,
+                        TableConstrElem::Lit(TableLitElem::Positional(index)),
+                        s2,
+                    ),
+                    (
+                        s3.then_line(Line::Empty).then(s4),
+                        TableConstrElem::Lit(TableLitElem::Positional(value)),
+                        Space::empty(span),
+                    ),
+                ];
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Set, span))),
                     s0,
-                    constr,
+                    constr: TableConstr(BoundedSeparated {
+                        elems,
+                        trailing: None,
+                        span,
+                    }),
                     span,
                 });
                 (new, true)
