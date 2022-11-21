@@ -3,7 +3,7 @@
 use chumsky::prelude::*;
 use chumsky::text::Character;
 
-use crate::ast::{BoundedSeparated, Ident, Line, Separated, Space};
+use crate::ast::{BoundedSeparated, Ident, Line, Space};
 use crate::span::Span;
 
 pub type Error = Simple<char, Span>;
@@ -62,27 +62,6 @@ pub fn local(space: EParser<Space>) -> EParser<Option<Space>> {
 // This function is more of a utility function. Because of this and to keep the
 // code nicer, I have decided that the rules specified in the `parser` module
 // don't apply to it.
-pub fn separated_by<E: 'static, S1: 'static, S2: 'static>(
-    elem: impl Parser<char, E, Error = Error> + Clone + 'static,
-    separator: impl Parser<char, S1, Error = Error> + 'static,
-    trailing_separator: impl Parser<char, S2, Error = Error> + 'static,
-) -> EParser<Separated<E, S1, S2>> {
-    elem.clone()
-        .then(separator.then(elem).repeated())
-        .then(trailing_separator.or_not())
-        .or_not()
-        .map_with_span(|s, span| match s {
-            Some(((first_elem, last_elems), trailing)) => Separated::NonEmpty {
-                first_elem,
-                last_elems,
-                trailing,
-                span,
-            },
-            None => Separated::Empty(span),
-        })
-        .boxed()
-}
-
 pub fn bounded_separated<E: 'static>(
     space: impl Parser<char, Space, Error = Error> + Clone + 'static,
     start: impl Parser<char, (), Error = Error> + 'static,

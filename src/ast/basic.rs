@@ -78,26 +78,6 @@ impl HasSpan for Ident {
 }
 
 #[derive(Debug, Clone)]
-pub enum Separated<E, S1, S2> {
-    Empty(Span),
-    NonEmpty {
-        first_elem: E,
-        last_elems: Vec<(S1, E)>,
-        trailing: Option<S2>,
-        span: Span,
-    },
-}
-
-impl<E, S1, S2> HasSpan for Separated<E, S1, S2> {
-    fn span(&self) -> Span {
-        match self {
-            Self::Empty(span) => *span,
-            Self::NonEmpty { span, .. } => *span,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
 pub struct BoundedSeparated<E> {
     pub elems: Vec<(Space, E, Space)>,
     pub trailing: Option<Space>,
