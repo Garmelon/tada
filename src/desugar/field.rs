@@ -118,17 +118,24 @@ impl Field {
                 value,
                 span,
             } => {
-                let new = Expr::Field(Self::AssignIdent {
+                // `expr s0 . s1 ident s2 = s3 value`
+                // -> `expr s0 [ s1 ident_str ] s2 = s3 value`
+                let ident_str = Expr::Lit(Lit::String(StringLit {
+                    elems: vec![StringLitElem::Plain(ident.name)],
+                    span,
+                }));
+                let new = Expr::Field(Self::Assign {
                     expr,
                     s0,
                     s1,
-                    ident,
-                    s2,
-                    s3,
+                    index: Box::new(ident_str),
+                    s2: Space::empty(span),
+                    s3: s2,
+                    s4: s3,
                     value,
                     span,
                 });
-                (new, false) // TODO Implement
+                (new, true)
             }
         }
     }
