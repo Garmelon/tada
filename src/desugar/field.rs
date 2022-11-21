@@ -95,7 +95,7 @@ impl Field {
                 // -> `expr s0 [ s1 ident_str ]`
                 let ident_str = Expr::Lit(Lit::String(StringLit {
                     elems: vec![StringLitElem::Plain(ident.name)],
-                    span,
+                    span: ident.span,
                 }));
                 let new = Expr::Field(Self::Access {
                     expr,
@@ -122,7 +122,7 @@ impl Field {
                 // -> `expr s0 [ s1 ident_str ] s2 = s3 value`
                 let ident_str = Expr::Lit(Lit::String(StringLit {
                     elems: vec![StringLitElem::Plain(ident.name)],
-                    span,
+                    span: ident.span,
                 }));
                 let new = Expr::Field(Self::Assign {
                     expr,
