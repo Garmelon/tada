@@ -10,11 +10,11 @@ impl Expr {
 
             Self::Call(call) => call.desugar(),
             Self::Field(field) => field.desugar(),
+            Self::Var(var) => var.desugar(),
 
-            Self::Var(var) => (Self::Var(var), false), // TODO Implement
             Self::TableConstr(constr) => (Self::TableConstr(constr), false), // TODO Implement
-            Self::TableDestr(destr) => (Self::TableDestr(destr), false), // TODO Implement
-            Self::FuncDef(def) => (Self::FuncDef(def), false), // TODO Implement
+            Self::TableDestr(destr) => (Self::TableDestr(destr), false),     // TODO Implement
+            Self::FuncDef(def) => (Self::FuncDef(def), false),               // TODO Implement
 
             Self::Paren {
                 s0,
