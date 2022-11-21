@@ -16,7 +16,7 @@ impl Program {
                 s2,
                 span,
             } => {
-                let (elems, desugared) = (elems, false); // TODO Implement
+                let (elems, desugared) = elems.desugar_elem(|e| (e, false)); // TODO Implement
                 if desugared {
                     let new = Self::Module {
                         s0,
