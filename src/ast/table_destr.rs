@@ -1,6 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::{Expr, Ident, Separated, Space};
+use super::{BoundedSeparated, Expr, Ident, Space};
 
 // TODO Make table patterns recursive
 
@@ -34,16 +34,11 @@ impl HasSpan for TablePatternElem {
 ///
 /// Structure: `{ s0 elems s1 }`
 #[derive(Debug, Clone)]
-pub struct TablePattern {
-    pub s0: Space,
-    pub elems: Separated<TablePatternElem, (Space, Space), Space>,
-    pub s1: Space,
-    pub span: Span,
-}
+pub struct TablePattern(pub BoundedSeparated<TablePatternElem>);
 
 impl HasSpan for TablePattern {
     fn span(&self) -> Span {
-        self.span
+        self.0.span()
     }
 }
 

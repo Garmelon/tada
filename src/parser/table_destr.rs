@@ -4,7 +4,7 @@ use chumsky::prelude::*;
 
 use crate::ast::{Expr, Ident, Space, TableDestr, TablePattern, TablePatternElem};
 
-use super::basic::{separated_by, EParser, Error};
+use super::basic::{bounded_separated, EParser, Error};
 
 fn table_pattern_elem(
     space: EParser<Space>,
@@ -31,21 +31,15 @@ fn table_pattern_elem(
 
 pub fn table_pattern(space: EParser<Space>, ident: EParser<Ident>) -> EParser<TablePattern> {
     let elem = table_pattern_elem(space.clone(), ident);
-    let separator = space.clone().then_ignore(just(',')).then(space.clone());
-    let trailing_separator = space.clone().then_ignore(just(','));
-
-    space
-        .clone()
-        .then(separated_by(elem, separator, trailing_separator))
-        .then(space)
-        .delimited_by(just('{'), just('}'))
-        .map_with_span(|((s0, elems), s1), span| TablePattern {
-            s0,
-            elems,
-            s1,
-            span,
-        })
-        .boxed()
+    bounded_separated(
+        space,
+        just('{').to(()),
+        just('}').to(()),
+        just(',').to(()),
+        elem,
+    )
+    .map(TablePattern)
+    .boxed()
 }
 
 pub fn table_destr(
