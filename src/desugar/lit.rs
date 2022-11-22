@@ -1,4 +1,4 @@
-use crate::ast::{Lit, TableLit, TableLitElem};
+use crate::ast::{Expr, Lit, TableLit, TableLitElem};
 
 impl TableLitElem {
     pub fn desugar(self) -> (Self, bool) {
@@ -32,7 +32,17 @@ impl TableLitElem {
 impl TableLit {
     pub fn desugar(self) -> (Self, bool) {
         let (elems, desugared) = self.0.desugar(|e| e.desugar());
-        (elems.table_lit(), desugared)
+        if desugared {
+            (elems.table_lit(), true)
+        } else {
+            let (elems, removed) = elems.remove_map(|e| match e {
+                TableLitElem::Named { value, .. } if matches!(*value, Expr::Lit(Lit::Nil(_))) => {
+                    Err(())
+                }
+                e => Ok(e),
+            });
+            (elems.table_lit(), !removed.is_empty())
+        }
     }
 }
 
