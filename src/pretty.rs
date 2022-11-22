@@ -21,5 +21,7 @@ pub fn pretty_to_string<P: Pretty<'static, RcAllocator>>(p: P, width: usize) -> 
     p.pretty(&RcAllocator)
         .render(width, &mut out)
         .expect("p could not be rendered");
-    String::from_utf8(out).expect("p created non-utf8 string")
+    let mut s = String::from_utf8(out).expect("p created non-utf8 string");
+    s.push('\n');
+    s
 }

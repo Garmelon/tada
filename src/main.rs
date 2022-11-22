@@ -80,7 +80,7 @@ fn main() -> anyhow::Result<()> {
                 .parse(stream)
                 .map_err(|e| anyhow!("{e:?}"))?;
 
-            println!("{}", pretty::pretty_to_string(program, 100));
+            print!("{}", pretty::pretty_to_string(program, 100));
         }
 
         Command::Desugar {
