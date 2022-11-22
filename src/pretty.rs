@@ -1,3 +1,6 @@
+// TODO Remove this and print whitespace and comments properly
+#![allow(unused_variables)]
+
 use pretty::{Pretty, RcAllocator};
 
 mod basic;
