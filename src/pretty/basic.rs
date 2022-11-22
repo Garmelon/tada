@@ -1,6 +1,6 @@
 use pretty::{DocAllocator, DocBuilder, Pretty};
 
-use crate::ast::{BoundedSeparated, Ident};
+use crate::ast::{BoundedSeparated, Ident, Space};
 
 use super::NEST_DEPTH;
 
@@ -24,6 +24,7 @@ impl<E> BoundedSeparated<E> {
         D::Doc: Clone,
         FE: Fn(E) -> DocBuilder<'a, D>,
     {
+        let elems_empty = self.elems.is_empty();
         allocator
             .intersperse(
                 self.elems
@@ -31,7 +32,7 @@ impl<E> BoundedSeparated<E> {
                     .map(|(s0, elem, s1)| allocator.line().append(elem_pretty(elem))),
                 separator.clone(),
             )
-            .append(self.trailing.map(|s| separator))
+            .append(self.trailing.filter(|_| !elems_empty).map(|s| separator))
             .nest(NEST_DEPTH)
             .append(allocator.line())
             .enclose(start, end)
