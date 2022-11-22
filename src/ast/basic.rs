@@ -2,6 +2,8 @@ use std::fmt;
 
 use crate::span::{HasSpan, Span};
 
+use super::{TableConstr, TableConstrElem, TableLit, TableLitElem};
+
 #[derive(Clone)]
 pub enum Line {
     Empty,
@@ -103,5 +105,17 @@ impl<E> BoundedSeparated<E> {
         self.elems
             .push((Space::empty(self.span), elem, Space::empty(self.span)));
         self
+    }
+}
+
+impl BoundedSeparated<TableLitElem> {
+    pub fn table_lit(self) -> TableLit {
+        TableLit(self)
+    }
+}
+
+impl BoundedSeparated<TableConstrElem> {
+    pub fn table_constr(self) -> TableConstr {
+        TableConstr(self)
     }
 }

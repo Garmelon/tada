@@ -1,6 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstr, TableConstrElem,
-    TableLitElem,
+    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstrElem, TableLitElem,
 };
 use crate::builtin::Builtin;
 
@@ -15,11 +14,10 @@ impl Field {
                 s2: _,
                 span,
             } => {
-                let constr = TableConstr(
-                    BoundedSeparated::new(span)
-                        .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
-                        .then(TableConstrElem::Lit(TableLitElem::Positional(index))),
-                );
+                let constr = BoundedSeparated::new(span)
+                    .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
+                    .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
+                    .table_constr();
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Get, span))),
                     s0: Space::empty(span),
@@ -40,12 +38,11 @@ impl Field {
                 value,
                 span,
             } => {
-                let constr = TableConstr(
-                    BoundedSeparated::new(span)
-                        .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
-                        .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
-                        .then(TableConstrElem::Lit(TableLitElem::Positional(value))),
-                );
+                let constr = BoundedSeparated::new(span)
+                    .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
+                    .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
+                    .then(TableConstrElem::Lit(TableLitElem::Positional(value)))
+                    .table_constr();
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Set, span))),
                     s0: Space::empty(span),

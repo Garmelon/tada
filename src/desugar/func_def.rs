@@ -1,6 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, FuncDef, Ident, Lit, Space, TableConstr, TableConstrElem,
-    TableLit, TableLitElem, Var,
+    BoundedSeparated, Call, Expr, FuncDef, Ident, Lit, Space, TableConstrElem, TableLitElem, Var,
 };
 use crate::builtin::Builtin;
 
@@ -14,13 +13,15 @@ impl FuncDef {
                 body,
                 span,
             } => {
-                let quote = TableLit(BoundedSeparated::new(span).then(TableLitElem::Named {
-                    name: Ident::new("quote", span),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    value: body,
-                    span,
-                }));
+                let quote = BoundedSeparated::new(span)
+                    .then(TableLitElem::Named {
+                        name: Ident::new("quote", span),
+                        s0: Space::empty(span),
+                        s1: Space::empty(span),
+                        value: body,
+                        span,
+                    })
+                    .table_lit();
                 let quote = Box::new(Expr::Lit(Lit::Table(quote)));
                 let scope = Expr::Call(Call::NoArg {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Scope, span))),
@@ -28,7 +29,7 @@ impl FuncDef {
                     s1: Space::empty(span),
                     span,
                 });
-                let new = Expr::TableConstr(TableConstr(
+                let new = Expr::TableConstr(
                     BoundedSeparated::new(span)
                         .then(TableConstrElem::Lit(TableLitElem::Positional(quote)))
                         .then(TableConstrElem::Lit(TableLitElem::Named {
@@ -37,8 +38,9 @@ impl FuncDef {
                             s1: Space::empty(span),
                             value: Box::new(scope),
                             span,
-                        })),
-                ));
+                        }))
+                        .table_constr(),
+                );
                 (new, true)
             }
 
@@ -69,12 +71,13 @@ impl FuncDef {
                 });
                 let body = BoundedSeparated::new(span)
                     .then(TableLitElem::Positional(Box::new(arg_assign)))
-                    .then(TableLitElem::Positional(body));
+                    .then(TableLitElem::Positional(body))
+                    .table_lit();
                 let new = Expr::FuncDef(Self::AnonNoArg {
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     s2: Space::empty(span),
-                    body: Box::new(Expr::Lit(Lit::Table(TableLit(body)))),
+                    body: Box::new(Expr::Lit(Lit::Table(body))),
                     span,
                 });
                 (new, true)

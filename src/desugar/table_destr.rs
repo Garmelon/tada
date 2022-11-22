@@ -5,25 +5,28 @@ use crate::ast::{
 use crate::builtin::Builtin;
 
 fn pattern_to_constr(pattern: TablePattern) -> TableConstr {
-    TableConstr(pattern.0.map(|e| match e {
-        TablePatternElem::Positional(ident) => TableConstrElem::Lit(TableLitElem::Positional(
-            Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
-        )),
+    pattern
+        .0
+        .map(|e| match e {
+            TablePatternElem::Positional(ident) => TableConstrElem::Lit(TableLitElem::Positional(
+                Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
+            )),
 
-        TablePatternElem::Named {
-            name,
-            s0,
-            s1,
-            ident,
-            span,
-        } => TableConstrElem::Lit(TableLitElem::Named {
-            name,
-            s0,
-            s1,
-            value: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
-            span,
-        }),
-    }))
+            TablePatternElem::Named {
+                name,
+                s0,
+                s1,
+                ident,
+                span,
+            } => TableConstrElem::Lit(TableLitElem::Named {
+                name,
+                s0,
+                s1,
+                value: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
+                span,
+            }),
+        })
+        .table_constr()
 }
 
 impl TableDestr {
@@ -55,7 +58,7 @@ impl TableDestr {
         let new = Expr::Call(Call::Constr {
             expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Destructure, span))),
             s0: Space::empty(span),
-            constr: TableConstr(constr),
+            constr: constr.table_constr(),
             span,
         });
         (new, true)

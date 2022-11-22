@@ -1,5 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Expr, Field, Ident, Line, Lit, Space, TableConstr, TableConstrElem, TableLit,
+    BoundedSeparated, Expr, Field, Ident, Line, Lit, Space, TableConstr, TableConstrElem,
     TableLitElem,
 };
 use crate::span::HasSpan;
@@ -25,12 +25,12 @@ impl TableConstr {
             name: Ident::new("raw", span),
             s0: Space::empty(span),
             s1: Space::empty(span),
-            value: Box::new(Expr::Lit(Lit::Table(TableLit(elems)))),
+            value: Box::new(Expr::Lit(Lit::Table(elems.table_lit()))),
             span,
         };
-        let mut expr = Expr::Lit(Lit::Table(TableLit(
-            BoundedSeparated::new(span).then(raw_elem),
-        )));
+        let mut expr = Expr::Lit(Lit::Table(
+            BoundedSeparated::new(span).then(raw_elem).table_lit(),
+        ));
 
         // `sl [ s0 index s1 ] s2 = s3 value sr`
         // -> `expr s0 [ s1 index s2 ] s3 = s4 s5 value`

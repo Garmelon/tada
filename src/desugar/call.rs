@@ -1,4 +1,4 @@
-use crate::ast::{BoundedSeparated, Call, Expr, Ident, Lit, Space, TableLit, TableLitElem};
+use crate::ast::{BoundedSeparated, Call, Expr, Ident, Lit, Space, TableLitElem};
 
 // TODO Add span for just the parentheses to ast, or limit span to parentheses
 
@@ -27,9 +27,9 @@ impl Call {
                     value: arg,
                     span,
                 };
-                let new = Expr::Lit(Lit::Table(TableLit(
-                    BoundedSeparated::new(span).then(call).then(arg),
-                )));
+                let new = Expr::Lit(Lit::Table(
+                    BoundedSeparated::new(span).then(call).then(arg).table_lit(),
+                ));
                 (new, true)
             }
 

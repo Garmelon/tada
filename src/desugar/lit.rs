@@ -32,7 +32,7 @@ impl TableLitElem {
 impl TableLit {
     pub fn desugar(self) -> (Self, bool) {
         let (elems, desugared) = self.0.desugar(|e| e.desugar());
-        (Self(elems), desugared)
+        (elems.table_lit(), desugared)
     }
 }
 
