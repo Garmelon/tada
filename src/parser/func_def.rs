@@ -19,7 +19,7 @@ fn func_def_anon_no_arg(
             s0,
             s1,
             s2,
-            body: Box::new(body),
+            body: body.boxed(),
             span,
         })
 }
@@ -45,7 +45,7 @@ fn func_def_anon_arg(
                 arg,
                 s2,
                 s3,
-                body: Box::new(body),
+                body: body.boxed(),
                 span,
             },
         )
@@ -65,7 +65,7 @@ fn func_def_anon_destr(
             s0,
             pattern,
             s1,
-            body: Box::new(body),
+            body: body.boxed(),
             span,
         })
 }
@@ -94,7 +94,7 @@ fn func_def_named_no_arg(
                 s1,
                 s2,
                 s3,
-                body: Box::new(body),
+                body: body.boxed(),
                 span,
             },
         )
@@ -128,7 +128,7 @@ fn func_def_named_arg(
                 arg,
                 s3,
                 s4,
-                body: Box::new(body),
+                body: body.boxed(),
                 span,
             },
         )
@@ -157,7 +157,7 @@ fn func_def_named_destr(
                 s1,
                 pattern,
                 s2,
-                body: Box::new(body),
+                body: body.boxed(),
                 span,
             }
         })

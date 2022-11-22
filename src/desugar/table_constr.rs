@@ -25,7 +25,7 @@ impl TableConstr {
             name: Ident::new("raw", span),
             s0: Space::empty(span),
             s1: Space::empty(span),
-            value: Box::new(Expr::Lit(Lit::Table(elems.table_lit()))),
+            value: Expr::Lit(Lit::Table(elems.table_lit())).boxed(),
             span,
         };
         let mut expr = Expr::Lit(Lit::Table(
@@ -36,7 +36,7 @@ impl TableConstr {
         // -> `expr s0 [ s1 index s2 ] s3 = s4 s5 value`
         for (s0, (s1, index, s2, s3, s4, value, span), s5) in setters {
             expr = Expr::Field(Field::Assign {
-                expr: Box::new(expr),
+                expr: expr.boxed(),
                 s0,
                 s1,
                 index,

@@ -38,7 +38,7 @@ impl Call {
                     expr,
                     s0,
                     s1,
-                    arg: Box::new(Expr::Lit(Lit::Nil(span))),
+                    arg: Expr::Lit(Lit::Nil(span)).boxed(),
                     s2: Space::empty(span),
                     span,
                 });
@@ -55,7 +55,7 @@ impl Call {
                     expr,
                     s0,
                     s1: Space::empty(span),
-                    arg: Box::new(Expr::TableConstr(constr)),
+                    arg: Expr::TableConstr(constr).boxed(),
                     s2: Space::empty(span),
                     span,
                 });

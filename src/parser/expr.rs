@@ -18,7 +18,7 @@ fn atom_paren(
         .then_ignore(just(')'))
         .map_with_span(|((s0, inner), s1), span| Expr::Paren {
             s0,
-            inner: Box::new(inner),
+            inner: inner.boxed(),
             s1,
             span,
         })
@@ -63,11 +63,11 @@ fn left_assoc(
     over.then(op_over.repeated())
         .foldl(|left, (s0, op, s1, right)| Expr::BinOp {
             span: left.span().join(right.span()),
-            left: Box::new(left),
+            left: left.boxed(),
             s0,
             op,
             s1,
-            right: Box::new(right),
+            right: right.boxed(),
         })
         .boxed()
 }
@@ -89,11 +89,11 @@ fn right_assoc(
         .then(over)
         .foldr(|(left, s0, op, s1), right| Expr::BinOp {
             span: left.span().join(right.span()),
-            left: Box::new(left),
+            left: left.boxed(),
             s0,
             op,
             s1,
-            right: Box::new(right),
+            right: right.boxed(),
         })
         .boxed()
 }

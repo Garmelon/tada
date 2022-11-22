@@ -16,13 +16,13 @@ impl Var {
                 // `[ s0 index s1 ]`
                 // -> `'scope()[ s0 index s1 ]`
                 let scope = Expr::Call(Call::NoArg {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Scope, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::Scope, span)).boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
                 });
                 let new = Expr::Field(Field::Access {
-                    expr: Box::new(scope),
+                    expr: scope.boxed(),
                     s0: Space::empty(span),
                     s1: s0,
                     index,
@@ -45,13 +45,13 @@ impl Var {
                 // `[ s0 index s1 ] s2 = s3 value`
                 // -> `'scope()[ s0 index s1 ] s2 = s3 value`
                 let scope = Expr::Call(Call::NoArg {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Scope, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::Scope, span)).boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
                 });
                 let new = Expr::Field(Field::Assign {
-                    expr: Box::new(scope),
+                    expr: scope.boxed(),
                     s0: Space::empty(span),
                     s1: s0,
                     index,
@@ -75,20 +75,20 @@ impl Var {
                 span,
             } => {
                 let scope = Expr::Call(Call::NoArg {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Scope, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::Scope, span)).boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
                 });
                 let constr = BoundedSeparated::new(span)
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(Box::new(
-                        scope,
-                    ))))
+                    .then(TableConstrElem::Lit(TableLitElem::Positional(
+                        scope.boxed(),
+                    )))
                     .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
                     .then(TableConstrElem::Lit(TableLitElem::Positional(value)))
                     .table_constr();
                 let new = Expr::Call(Call::Constr {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::SetRaw, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::SetRaw, span)).boxed(),
                     s0: Space::empty(span),
                     constr,
                     span,
@@ -102,7 +102,7 @@ impl Var {
                 let span = name.span();
                 let new = Expr::Var(Self::Access {
                     s0: Space::empty(span),
-                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(name)))),
+                    index: Expr::Lit(Lit::String(StringLit::from_ident(name))).boxed(),
                     s1: Space::empty(span),
                     span,
                 });
@@ -122,7 +122,7 @@ impl Var {
                 let new = Expr::Var(Self::Assign {
                     local,
                     s0: Space::empty(span),
-                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(name)))),
+                    index: Expr::Lit(Lit::String(StringLit::from_ident(name))).boxed(),
                     s1: Space::empty(span),
                     s2: s0,
                     s3: s1,

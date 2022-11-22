@@ -242,3 +242,9 @@ impl HasSpan for Expr {
         }
     }
 }
+
+impl Expr {
+    pub fn boxed(self) -> Box<Self> {
+        Box::new(self)
+    }
+}

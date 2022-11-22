@@ -57,7 +57,7 @@ enum Suffix {
 
 impl Suffix {
     fn into_expr(self, span: Span, expr: Expr) -> Expr {
-        let expr = Box::new(expr);
+        let expr = expr.boxed();
         match self {
             Self::CallArg { s0, s1, arg, s2 } => Expr::Call(Call::Arg {
                 expr,
@@ -143,7 +143,7 @@ fn suffix_call_arg(
         .map(|(((s0, s1), arg), s2)| Suffix::CallArg {
             s0,
             s1,
-            arg: Box::new(arg),
+            arg: arg.boxed(),
             s2,
         })
 }
@@ -180,7 +180,7 @@ fn suffix_field_access(
         .map(|(((s0, s1), index), s2)| Suffix::FieldAccess {
             s0,
             s1,
-            index: Box::new(index),
+            index: index.boxed(),
             s2,
         })
 }
@@ -204,11 +204,11 @@ fn suffix_field_assign(
             |((((((s0, s1), index), s2), s3), s4), value)| Suffix::FieldAssign {
                 s0,
                 s1,
-                index: Box::new(index),
+                index: index.boxed(),
                 s2,
                 s3,
                 s4,
-                value: Box::new(value),
+                value: value.boxed(),
             },
         )
 }
@@ -246,7 +246,7 @@ fn suffix_field_assign_ident(
                 ident,
                 s2,
                 s3,
-                value: Box::new(value),
+                value: value.boxed(),
             },
         )
 }

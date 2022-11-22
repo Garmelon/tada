@@ -132,7 +132,7 @@ pub fn table_lit_elem(
 ) -> EParser<TableLitElem> {
     let positional = expr
         .clone()
-        .map(|value| TableLitElem::Positional(Box::new(value)));
+        .map(|value| TableLitElem::Positional(value.boxed()));
 
     let named = ident
         .then(space.clone())
@@ -143,7 +143,7 @@ pub fn table_lit_elem(
             name,
             s0,
             s1,
-            value: Box::new(value),
+            value: value.boxed(),
             span,
         });
 

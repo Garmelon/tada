@@ -59,7 +59,7 @@ pub fn table_destr(
             pattern,
             s0,
             s1,
-            value: Box::new(value),
+            value: value.boxed(),
             span,
         })
         .boxed()

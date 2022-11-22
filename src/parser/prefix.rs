@@ -17,7 +17,7 @@ enum Prefix {
 
 impl Prefix {
     fn into_expr(self, span: Span, expr: Expr) -> Expr {
-        let expr = Box::new(expr);
+        let expr = expr.boxed();
         match self {
             Self::Neg { minus, s0 } => Expr::Neg {
                 minus,

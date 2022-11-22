@@ -14,7 +14,7 @@ fn var_access(space: EParser<Space>, expr: EParser<Expr>) -> impl Parser<char, V
         .then_ignore(just(']'))
         .map_with_span(|((s0, index), s1), span| Var::Access {
             s0,
-            index: Box::new(index),
+            index: index.boxed(),
             s1,
             span,
         })
@@ -39,11 +39,11 @@ fn var_assign(
             |((((((local, s0), index), s1), s2), s3), value), span| Var::Assign {
                 local,
                 s0,
-                index: Box::new(index),
+                index: index.boxed(),
                 s1,
                 s2,
                 s3,
-                value: Box::new(value),
+                value: value.boxed(),
                 span,
             },
         )
@@ -67,7 +67,7 @@ fn var_assign_ident(
                 name,
                 s0,
                 s1,
-                value: Box::new(value),
+                value: value.boxed(),
                 span,
             },
         )

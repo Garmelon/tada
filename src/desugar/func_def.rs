@@ -22,9 +22,9 @@ impl FuncDef {
                         span,
                     })
                     .table_lit();
-                let quote = Box::new(Expr::Lit(Lit::Table(quote)));
+                let quote = Expr::Lit(Lit::Table(quote)).boxed();
                 let scope = Expr::Call(Call::NoArg {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Scope, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::Scope, span)).boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
@@ -36,7 +36,7 @@ impl FuncDef {
                             name: Ident::new("scope", span),
                             s0: Space::empty(span),
                             s1: Space::empty(span),
-                            value: Box::new(scope),
+                            value: scope.boxed(),
                             span,
                         }))
                         .table_constr(),
@@ -56,7 +56,7 @@ impl FuncDef {
                 // `function s0 ( s1 arg s2 ) s3 body`
                 // -> `function ( ) '{ local arg = 'arg(), body }`
                 let arg_call = Expr::Call(Call::NoArg {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Arg, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::Arg, span)).boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
@@ -66,18 +66,18 @@ impl FuncDef {
                     name: arg,
                     s0: Space::empty(span),
                     s1: Space::empty(span),
-                    value: Box::new(arg_call),
+                    value: arg_call.boxed(),
                     span,
                 });
                 let body = BoundedSeparated::new(span)
-                    .then(TableLitElem::Positional(Box::new(arg_assign)))
+                    .then(TableLitElem::Positional(arg_assign.boxed()))
                     .then(TableLitElem::Positional(body))
                     .table_lit();
                 let new = Expr::FuncDef(Self::AnonNoArg {
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     s2: Space::empty(span),
-                    body: Box::new(Expr::Lit(Lit::Table(body))),
+                    body: Expr::Lit(Lit::Table(body)).boxed(),
                     span,
                 });
                 (new, true)

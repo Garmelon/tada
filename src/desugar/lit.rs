@@ -5,7 +5,7 @@ impl TableLitElem {
         match self {
             Self::Positional(expr) => {
                 let (expr, desugared) = expr.desugar();
-                (Self::Positional(Box::new(expr)), desugared)
+                (Self::Positional(expr.boxed()), desugared)
             }
 
             Self::Named {
@@ -20,7 +20,7 @@ impl TableLitElem {
                     name,
                     s0,
                     s1,
-                    value: Box::new(value),
+                    value: value.boxed(),
                     span,
                 };
                 (new, desugared)

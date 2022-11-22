@@ -19,7 +19,7 @@ impl Field {
                     .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
                     .table_constr();
                 let new = Expr::Call(Call::Constr {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Get, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::Get, span)).boxed(),
                     s0: Space::empty(span),
                     constr,
                     span,
@@ -44,7 +44,7 @@ impl Field {
                     .then(TableConstrElem::Lit(TableLitElem::Positional(value)))
                     .table_constr();
                 let new = Expr::Call(Call::Constr {
-                    expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Set, span))),
+                    expr: Expr::Lit(Lit::Builtin(Builtin::Set, span)).boxed(),
                     s0: Space::empty(span),
                     constr,
                     span,
@@ -65,7 +65,7 @@ impl Field {
                     expr,
                     s0,
                     s1,
-                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
+                    index: Expr::Lit(Lit::String(StringLit::from_ident(ident))).boxed(),
                     s2: Space::empty(span),
                     span,
                 });
@@ -88,7 +88,7 @@ impl Field {
                     expr,
                     s0,
                     s1,
-                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
+                    index: Expr::Lit(Lit::String(StringLit::from_ident(ident))).boxed(),
                     s2: Space::empty(span),
                     s3: s2,
                     s4: s3,

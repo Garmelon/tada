@@ -9,7 +9,7 @@ fn pattern_to_constr(pattern: TablePattern) -> TableConstr {
         .0
         .map(|e| match e {
             TablePatternElem::Positional(ident) => TableConstrElem::Lit(TableLitElem::Positional(
-                Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
+                Expr::Lit(Lit::String(StringLit::from_ident(ident))).boxed(),
             )),
 
             TablePatternElem::Named {
@@ -22,7 +22,7 @@ fn pattern_to_constr(pattern: TablePattern) -> TableConstr {
                 name,
                 s0,
                 s1,
-                value: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
+                value: Expr::Lit(Lit::String(StringLit::from_ident(ident))).boxed(),
                 span,
             }),
         })
@@ -41,22 +41,22 @@ impl TableDestr {
         } = self;
 
         let mut constr = BoundedSeparated::new(span)
-            .then(TableConstrElem::Lit(TableLitElem::Positional(Box::new(
-                Expr::TableConstr(pattern_to_constr(pattern)),
-            ))))
+            .then(TableConstrElem::Lit(TableLitElem::Positional(
+                Expr::TableConstr(pattern_to_constr(pattern)).boxed(),
+            )))
             .then(TableConstrElem::Lit(TableLitElem::Positional(value)));
         if local.is_some() {
             constr = constr.then(TableConstrElem::Lit(TableLitElem::Named {
                 name: Ident::new("local", span),
                 s0: Space::empty(span),
                 s1: Space::empty(span),
-                value: Box::new(Expr::Lit(Lit::Bool(true, span))),
+                value: Expr::Lit(Lit::Bool(true, span)).boxed(),
                 span,
             }));
         }
 
         let new = Expr::Call(Call::Constr {
-            expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Destructure, span))),
+            expr: Expr::Lit(Lit::Builtin(Builtin::Destructure, span)).boxed(),
             s0: Space::empty(span),
             constr: constr.table_constr(),
             span,

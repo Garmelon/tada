@@ -25,11 +25,11 @@ fn table_constr_elem(
         .map_with_span(
             |(((((s0, index), s1), s2), s3), value), span| TableConstrElem::Indexed {
                 s0,
-                index: Box::new(index),
+                index: index.boxed(),
                 s1,
                 s2,
                 s3,
-                value: Box::new(value),
+                value: value.boxed(),
                 span,
             },
         );
