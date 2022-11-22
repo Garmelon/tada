@@ -101,6 +101,38 @@ impl HasSpan for FuncDef {
 }
 
 impl FuncDef {
+    pub fn anon_no_arg(body: Box<Expr>, span: Span) -> Self {
+        Self::AnonNoArg {
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            s2: Space::empty(span),
+            body,
+            span,
+        }
+    }
+
+    pub fn anon_arg(arg: Ident, body: Box<Expr>, span: Span) -> Self {
+        Self::AnonArg {
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            arg,
+            s2: Space::empty(span),
+            s3: Space::empty(span),
+            body,
+            span,
+        }
+    }
+
+    pub fn anon_destr(pattern: TablePattern, body: Box<Expr>, span: Span) -> Self {
+        Self::AnonDestr {
+            s0: Space::empty(span),
+            pattern,
+            s1: Space::empty(span),
+            body,
+            span,
+        }
+    }
+
     pub fn expr(self) -> Expr {
         Expr::FuncDef(self)
     }

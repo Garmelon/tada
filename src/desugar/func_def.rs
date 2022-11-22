@@ -1,5 +1,6 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, FuncDef, Ident, Lit, Space, TableConstrElem, TableLitElem, Var,
+    BoundedSeparated, Call, Expr, FuncDef, Ident, Lit, Space, TableConstrElem, TableDestr,
+    TableLitElem, Var,
 };
 use crate::builtin::Builtin;
 
@@ -54,47 +55,74 @@ impl FuncDef {
             }
 
             Self::AnonDestr {
-                s0,
+                s0: _,
                 pattern,
-                s1,
+                s1: _,
                 body,
                 span,
-            } => todo!(),
+            } => {
+                let arg_call = Call::no_arg(Lit::Builtin(Builtin::Arg, span).expr().boxed(), span);
+                let arg_destr = TableDestr::new(true, pattern, arg_call.expr().boxed(), span);
+                let body = BoundedSeparated::new(span)
+                    .then(TableLitElem::Positional(arg_destr.expr().boxed()))
+                    .then(TableLitElem::Positional(body))
+                    .table_lit();
+                let new = Self::AnonNoArg {
+                    s0: Space::empty(span),
+                    s1: Space::empty(span),
+                    s2: Space::empty(span),
+                    body: body.lit().expr().boxed(),
+                    span,
+                };
+                (new.expr(), true)
+            }
 
             Self::NamedNoArg {
                 local,
-                s0,
+                s0: _,
                 name,
-                s1,
-                s2,
-                s3,
+                s1: _,
+                s2: _,
+                s3: _,
                 body,
                 span,
-            } => todo!(),
+            } => {
+                let anon = Self::anon_no_arg(body, span);
+                let new = Var::assign_ident(local.is_some(), name, anon.expr().boxed(), span);
+                (new.expr(), true)
+            }
 
             Self::NamedArg {
                 local,
-                s0,
+                s0: _,
                 name,
-                s1,
-                s2,
+                s1: _,
+                s2: _,
                 arg,
-                s3,
-                s4,
+                s3: _,
+                s4: _,
                 body,
                 span,
-            } => todo!(),
+            } => {
+                let anon = Self::anon_arg(arg, body, span);
+                let new = Var::assign_ident(local.is_some(), name, anon.expr().boxed(), span);
+                (new.expr(), true)
+            }
 
             Self::NamedDestr {
                 local,
-                s0,
+                s0: _,
                 name,
-                s1,
+                s1: _,
                 pattern,
-                s2,
+                s2: _,
                 body,
                 span,
-            } => todo!(),
+            } => {
+                let anon = Self::anon_destr(pattern, body, span);
+                let new = Var::assign_ident(local.is_some(), name, anon.expr().boxed(), span);
+                (new.expr(), true)
+            }
         }
     }
 }

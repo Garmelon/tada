@@ -63,6 +63,23 @@ impl HasSpan for TableDestr {
 }
 
 impl TableDestr {
+    pub fn new(local: bool, pattern: TablePattern, value: Box<Expr>, span: Span) -> Self {
+        let local = if local {
+            Some(Space::empty(span))
+        } else {
+            None
+        };
+
+        Self {
+            local,
+            pattern,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            value,
+            span,
+        }
+    }
+
     pub fn expr(self) -> Expr {
         Expr::TableDestr(self)
     }
