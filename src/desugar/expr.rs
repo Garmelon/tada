@@ -5,7 +5,7 @@ impl Expr {
         match self {
             Self::Lit(lit) => {
                 let (lit, desugared) = lit.desugar();
-                (Self::Lit(lit), desugared)
+                (lit.expr(), desugared)
             }
 
             Self::Call(call) => call.desugar(),

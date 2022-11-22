@@ -1,6 +1,4 @@
-use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstrElem, Var,
-};
+use crate::ast::{BoundedSeparated, Call, Expr, Field, Lit, StringLit, TableConstrElem, Var};
 use crate::builtin::Builtin;
 use crate::span::HasSpan;
 
@@ -58,38 +56,25 @@ impl Var {
             }
 
             Self::AccessIdent(name) => {
-                // `name`
-                // -> `[ name_str ]`
                 let span = name.span();
-                let new = Self::Access {
-                    s0: Space::empty(span),
-                    index: StringLit::from_ident(name).lit().expr().boxed(),
-                    s1: Space::empty(span),
-                    span,
-                };
+                let new = Self::access(StringLit::from_ident(name).lit().expr().boxed(), span);
                 (new.expr(), true)
             }
 
             Self::AssignIdent {
                 local,
                 name,
-                s0,
-                s1,
+                s0: _,
+                s1: _,
                 value,
                 span,
             } => {
-                // `local name s0 = s1 value`
-                // -> `local [ name_str ] s0 = s1 value`
-                let new = Self::Assign {
-                    local,
-                    s0: Space::empty(span),
-                    index: StringLit::from_ident(name).lit().expr().boxed(),
-                    s1: Space::empty(span),
-                    s2: s0,
-                    s3: s1,
+                let new = Self::assign(
+                    local.is_some(),
+                    StringLit::from_ident(name).lit().expr().boxed(),
                     value,
                     span,
-                };
+                );
                 (new.expr(), true)
             }
         }

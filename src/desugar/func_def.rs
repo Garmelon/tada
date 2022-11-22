@@ -37,17 +37,8 @@ impl FuncDef {
                 body,
                 span,
             } => {
-                // `function s0 ( s1 arg s2 ) s3 body`
-                // -> `function ( ) '{ local arg = 'arg(), body }`
                 let arg_call = Call::no_arg(Lit::Builtin(Builtin::Arg, span).expr().boxed(), span);
-                let arg_assign = Var::AssignIdent {
-                    local: Some(Space::empty(span)),
-                    name: arg,
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    value: arg_call.expr().boxed(),
-                    span,
-                };
+                let arg_assign = Var::assign_ident(true, arg, arg_call.expr().boxed(), span);
                 let body = BoundedSeparated::new(span)
                     .then(TableLitElem::Positional(arg_assign.expr().boxed()))
                     .then(TableLitElem::Positional(body))

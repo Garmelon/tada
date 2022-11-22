@@ -58,6 +58,51 @@ impl HasSpan for Var {
 }
 
 impl Var {
+    pub fn access(index: Box<Expr>, span: Span) -> Self {
+        Self::Access {
+            s0: Space::empty(span),
+            index,
+            s1: Space::empty(span),
+            span,
+        }
+    }
+
+    pub fn assign(local: bool, index: Box<Expr>, value: Box<Expr>, span: Span) -> Self {
+        let local = if local {
+            Some(Space::empty(span))
+        } else {
+            None
+        };
+
+        Self::Assign {
+            local,
+            s0: Space::empty(span),
+            index,
+            s1: Space::empty(span),
+            s2: Space::empty(span),
+            s3: Space::empty(span),
+            value,
+            span,
+        }
+    }
+
+    pub fn assign_ident(local: bool, name: Ident, value: Box<Expr>, span: Span) -> Self {
+        let local = if local {
+            Some(Space::empty(span))
+        } else {
+            None
+        };
+
+        Self::AssignIdent {
+            local,
+            name,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            value,
+            span,
+        }
+    }
+
     pub fn expr(self) -> Expr {
         Expr::Var(self)
     }
