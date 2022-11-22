@@ -15,21 +15,21 @@ impl Var {
             } => {
                 // `[ s0 index s1 ]`
                 // -> `'scope()[ s0 index s1 ]`
-                let scope = Expr::Call(Call::NoArg {
-                    expr: Expr::Lit(Lit::Builtin(Builtin::Scope, span)).boxed(),
+                let scope = Call::NoArg {
+                    expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
-                });
-                let new = Expr::Field(Field::Access {
-                    expr: scope.boxed(),
+                };
+                let new = Field::Access {
+                    expr: scope.expr().boxed(),
                     s0: Space::empty(span),
                     s1: s0,
                     index,
                     s2: s1,
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::Assign {
@@ -44,14 +44,14 @@ impl Var {
             } => {
                 // `[ s0 index s1 ] s2 = s3 value`
                 // -> `'scope()[ s0 index s1 ] s2 = s3 value`
-                let scope = Expr::Call(Call::NoArg {
-                    expr: Expr::Lit(Lit::Builtin(Builtin::Scope, span)).boxed(),
+                let scope = Call::NoArg {
+                    expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
-                });
-                let new = Expr::Field(Field::Assign {
-                    expr: scope.boxed(),
+                };
+                let new = Field::Assign {
+                    expr: scope.expr().boxed(),
                     s0: Space::empty(span),
                     s1: s0,
                     index,
@@ -60,8 +60,8 @@ impl Var {
                     s4: s3,
                     value,
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::Assign {
@@ -74,39 +74,39 @@ impl Var {
                 value,
                 span,
             } => {
-                let scope = Expr::Call(Call::NoArg {
-                    expr: Expr::Lit(Lit::Builtin(Builtin::Scope, span)).boxed(),
+                let scope = Call::NoArg {
+                    expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
-                });
+                };
                 let constr = BoundedSeparated::new(span)
                     .then(TableConstrElem::Lit(TableLitElem::Positional(
-                        scope.boxed(),
+                        scope.expr().boxed(),
                     )))
                     .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
                     .then(TableConstrElem::Lit(TableLitElem::Positional(value)))
                     .table_constr();
-                let new = Expr::Call(Call::Constr {
-                    expr: Expr::Lit(Lit::Builtin(Builtin::SetRaw, span)).boxed(),
+                let new = Call::Constr {
+                    expr: Lit::Builtin(Builtin::SetRaw, span).expr().boxed(),
                     s0: Space::empty(span),
                     constr,
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::AccessIdent(name) => {
                 // `name`
                 // -> `[ name_str ]`
                 let span = name.span();
-                let new = Expr::Var(Self::Access {
+                let new = Self::Access {
                     s0: Space::empty(span),
-                    index: Expr::Lit(Lit::String(StringLit::from_ident(name))).boxed(),
+                    index: Lit::String(StringLit::from_ident(name)).expr().boxed(),
                     s1: Space::empty(span),
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::AssignIdent {
@@ -119,17 +119,17 @@ impl Var {
             } => {
                 // `local name s0 = s1 value`
                 // -> `local [ name_str ] s0 = s1 value`
-                let new = Expr::Var(Self::Assign {
+                let new = Self::Assign {
                     local,
                     s0: Space::empty(span),
-                    index: Expr::Lit(Lit::String(StringLit::from_ident(name))).boxed(),
+                    index: Lit::String(StringLit::from_ident(name)).expr().boxed(),
                     s1: Space::empty(span),
                     s2: s0,
                     s3: s1,
                     value,
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
         }
     }

@@ -14,7 +14,7 @@ impl Program {
                 // -> `s0 table`
                 let new = Self::Expr {
                     s0,
-                    expr: Expr::Lit(Lit::Table(elems.table_lit())),
+                    expr: Lit::Table(elems.table_lit()).expr(),
                     s1: Space::empty(span),
                     span,
                 };

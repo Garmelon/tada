@@ -59,29 +59,36 @@ impl Suffix {
     fn into_expr(self, span: Span, expr: Expr) -> Expr {
         let expr = expr.boxed();
         match self {
-            Self::CallArg { s0, s1, arg, s2 } => Expr::Call(Call::Arg {
+            Self::CallArg { s0, s1, arg, s2 } => Call::Arg {
                 expr,
                 s0,
                 s1,
                 arg,
                 s2,
                 span,
-            }),
-            Self::CallNoArg { s0, s1 } => Expr::Call(Call::NoArg { expr, s0, s1, span }),
-            Self::CallConstr { s0, constr } => Expr::Call(Call::Constr {
+            }
+            .expr(),
+
+            Self::CallNoArg { s0, s1 } => Call::NoArg { expr, s0, s1, span }.expr(),
+
+            Self::CallConstr { s0, constr } => Call::Constr {
                 expr,
                 s0,
                 constr,
                 span,
-            }),
-            Self::FieldAccess { s0, s1, index, s2 } => Expr::Field(Field::Access {
+            }
+            .expr(),
+
+            Self::FieldAccess { s0, s1, index, s2 } => Field::Access {
                 expr,
                 s0,
                 s1,
                 index,
                 s2,
                 span,
-            }),
+            }
+            .expr(),
+
             Self::FieldAssign {
                 s0,
                 s1,
@@ -90,7 +97,7 @@ impl Suffix {
                 s3,
                 s4,
                 value,
-            } => Expr::Field(Field::Assign {
+            } => Field::Assign {
                 expr,
                 s0,
                 s1,
@@ -100,14 +107,18 @@ impl Suffix {
                 s4,
                 value,
                 span,
-            }),
-            Self::FieldAccessIdent { s0, s1, ident } => Expr::Field(Field::AccessIdent {
+            }
+            .expr(),
+
+            Self::FieldAccessIdent { s0, s1, ident } => Field::AccessIdent {
                 expr,
                 s0,
                 s1,
                 ident,
                 span,
-            }),
+            }
+            .expr(),
+
             Self::FieldAssignIdent {
                 s0,
                 s1,
@@ -115,7 +126,7 @@ impl Suffix {
                 s2,
                 s3,
                 value,
-            } => Expr::Field(Field::AssignIdent {
+            } => Field::AssignIdent {
                 expr,
                 s0,
                 s1,
@@ -124,7 +135,8 @@ impl Suffix {
                 s3,
                 value,
                 span,
-            }),
+            }
+            .expr(),
         }
     }
 }

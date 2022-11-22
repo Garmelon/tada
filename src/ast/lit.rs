@@ -198,3 +198,9 @@ impl HasSpan for Lit {
         }
     }
 }
+
+impl Lit {
+    pub fn expr(self) -> Expr {
+        Expr::Lit(self)
+    }
+}

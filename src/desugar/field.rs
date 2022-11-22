@@ -18,13 +18,13 @@ impl Field {
                     .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
                     .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
                     .table_constr();
-                let new = Expr::Call(Call::Constr {
-                    expr: Expr::Lit(Lit::Builtin(Builtin::Get, span)).boxed(),
+                let new = Call::Constr {
+                    expr: Lit::Builtin(Builtin::Get, span).expr().boxed(),
                     s0: Space::empty(span),
                     constr,
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::Assign {
@@ -43,13 +43,13 @@ impl Field {
                     .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
                     .then(TableConstrElem::Lit(TableLitElem::Positional(value)))
                     .table_constr();
-                let new = Expr::Call(Call::Constr {
-                    expr: Expr::Lit(Lit::Builtin(Builtin::Set, span)).boxed(),
+                let new = Call::Constr {
+                    expr: Lit::Builtin(Builtin::Set, span).expr().boxed(),
                     s0: Space::empty(span),
                     constr,
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::AccessIdent {
@@ -61,15 +61,15 @@ impl Field {
             } => {
                 // `expr s0 . s1 ident´
                 // -> `expr s0 [ s1 ident_str ]`
-                let new = Expr::Field(Self::Access {
+                let new = Self::Access {
                     expr,
                     s0,
                     s1,
-                    index: Expr::Lit(Lit::String(StringLit::from_ident(ident))).boxed(),
+                    index: Lit::String(StringLit::from_ident(ident)).expr().boxed(),
                     s2: Space::empty(span),
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::AssignIdent {
@@ -84,18 +84,18 @@ impl Field {
             } => {
                 // `expr s0 . s1 ident s2 = s3 value`
                 // -> `expr s0 [ s1 ident_str ] s2 = s3 value`
-                let new = Expr::Field(Self::Assign {
+                let new = Self::Assign {
                     expr,
                     s0,
                     s1,
-                    index: Expr::Lit(Lit::String(StringLit::from_ident(ident))).boxed(),
+                    index: Lit::String(StringLit::from_ident(ident)).expr().boxed(),
                     s2: Space::empty(span),
                     s3: s2,
                     s4: s3,
                     value,
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
         }
     }

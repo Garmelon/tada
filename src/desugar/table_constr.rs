@@ -25,17 +25,15 @@ impl TableConstr {
             name: Ident::new("raw", span),
             s0: Space::empty(span),
             s1: Space::empty(span),
-            value: Expr::Lit(Lit::Table(elems.table_lit())).boxed(),
+            value: Lit::Table(elems.table_lit()).expr().boxed(),
             span,
         };
-        let mut expr = Expr::Lit(Lit::Table(
-            BoundedSeparated::new(span).then(raw_elem).table_lit(),
-        ));
+        let mut expr = Lit::Table(BoundedSeparated::new(span).then(raw_elem).table_lit()).expr();
 
         // `sl [ s0 index s1 ] s2 = s3 value sr`
         // -> `expr s0 [ s1 index s2 ] s3 = s4 s5 value`
         for (s0, (s1, index, s2, s3, s4, value, span), s5) in setters {
-            expr = Expr::Field(Field::Assign {
+            expr = Field::Assign {
                 expr: expr.boxed(),
                 s0,
                 s1,
@@ -45,7 +43,8 @@ impl TableConstr {
                 s4: s4.then_line(Line::Empty).then(s5),
                 value,
                 span,
-            });
+            }
+            .expr();
         }
 
         (expr, true)

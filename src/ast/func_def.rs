@@ -99,3 +99,9 @@ impl HasSpan for FuncDef {
         }
     }
 }
+
+impl FuncDef {
+    pub fn expr(self) -> Expr {
+        Expr::FuncDef(self)
+    }
+}

@@ -56,3 +56,9 @@ impl HasSpan for Var {
         }
     }
 }
+
+impl Var {
+    pub fn expr(self) -> Expr {
+        Expr::Var(self)
+    }
+}

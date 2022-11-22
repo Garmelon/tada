@@ -39,3 +39,9 @@ impl HasSpan for TableConstr {
         self.0.span()
     }
 }
+
+impl TableConstr {
+    pub fn expr(self) -> Expr {
+        Expr::TableConstr(self)
+    }
+}

@@ -61,3 +61,9 @@ impl HasSpan for TableDestr {
         self.span
     }
 }
+
+impl TableDestr {
+    pub fn expr(self) -> Expr {
+        Expr::TableDestr(self)
+    }
+}

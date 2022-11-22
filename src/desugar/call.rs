@@ -27,22 +27,21 @@ impl Call {
                     value: arg,
                     span,
                 };
-                let new = Expr::Lit(Lit::Table(
-                    BoundedSeparated::new(span).then(call).then(arg).table_lit(),
-                ));
+                let new =
+                    Lit::Table(BoundedSeparated::new(span).then(call).then(arg).table_lit()).expr();
                 (new, true)
             }
 
             Self::NoArg { expr, s0, s1, span } => {
-                let new = Expr::Call(Self::Arg {
+                let new = Self::Arg {
                     expr,
                     s0,
                     s1,
-                    arg: Expr::Lit(Lit::Nil(span)).boxed(),
+                    arg: Lit::Nil(span).expr().boxed(),
                     s2: Space::empty(span),
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
 
             Self::Constr {
@@ -51,15 +50,15 @@ impl Call {
                 constr,
                 span,
             } => {
-                let new = Expr::Call(Self::Arg {
+                let new = Self::Arg {
                     expr,
                     s0,
                     s1: Space::empty(span),
-                    arg: Expr::TableConstr(constr).boxed(),
+                    arg: constr.expr().boxed(),
                     s2: Space::empty(span),
                     span,
-                });
-                (new, true)
+                };
+                (new.expr(), true)
             }
         }
     }

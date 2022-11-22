@@ -46,3 +46,9 @@ impl HasSpan for Call {
         }
     }
 }
+
+impl Call {
+    pub fn expr(self) -> Expr {
+        Expr::Call(self)
+    }
+}

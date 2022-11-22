@@ -67,3 +67,9 @@ impl HasSpan for Field {
         }
     }
 }
+
+impl Field {
+    pub fn expr(self) -> Expr {
+        Expr::Field(self)
+    }
+}
