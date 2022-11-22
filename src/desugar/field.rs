@@ -1,5 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, TableConstr, TableConstrElem,
+    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstr, TableConstrElem,
     TableLitElem,
 };
 use crate::builtin::Builtin;
@@ -9,34 +9,21 @@ impl Field {
         match self {
             Self::Access {
                 expr,
-                s0,
-                s1,
+                s0: _,
+                s1: _,
                 index,
-                s2,
+                s2: _,
                 span,
             } => {
-                // ` expr s0 [ s1 index s2 ]`
-                // -> `'get s0 { expr, s1 index s2 }`
-                let elems = vec![
-                    (
-                        Space::empty(span),
-                        TableConstrElem::Lit(TableLitElem::Positional(expr)),
-                        Space::empty(span),
-                    ),
-                    (
-                        s1,
-                        TableConstrElem::Lit(TableLitElem::Positional(index)),
-                        s2,
-                    ),
-                ];
+                let constr = TableConstr(
+                    BoundedSeparated::new(span)
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(index))),
+                );
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Get, span))),
-                    s0,
-                    constr: TableConstr(BoundedSeparated {
-                        elems,
-                        trailing: None,
-                        span,
-                    }),
+                    s0: Space::empty(span),
+                    constr,
                     span,
                 });
                 (new, true)
@@ -44,42 +31,25 @@ impl Field {
 
             Self::Assign {
                 expr,
-                s0,
-                s1,
+                s0: _,
+                s1: _,
                 index,
-                s2,
-                s3,
-                s4,
+                s2: _,
+                s3: _,
+                s4: _,
                 value,
                 span,
             } => {
-                // `expr s0 [ s1 index s2 ] s3 = s4 value`
-                // -> `'set s0 { expr, s1 index s2, s3 s4 value }`
-                let elems = vec![
-                    (
-                        Space::empty(span),
-                        TableConstrElem::Lit(TableLitElem::Positional(expr)),
-                        Space::empty(span),
-                    ),
-                    (
-                        s1,
-                        TableConstrElem::Lit(TableLitElem::Positional(index)),
-                        s2,
-                    ),
-                    (
-                        s3.then_line(Line::Empty).then(s4),
-                        TableConstrElem::Lit(TableLitElem::Positional(value)),
-                        Space::empty(span),
-                    ),
-                ];
+                let constr = TableConstr(
+                    BoundedSeparated::new(span)
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(value))),
+                );
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Set, span))),
-                    s0,
-                    constr: TableConstr(BoundedSeparated {
-                        elems,
-                        trailing: None,
-                        span,
-                    }),
+                    s0: Space::empty(span),
+                    constr,
                     span,
                 });
                 (new, true)

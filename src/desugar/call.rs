@@ -7,14 +7,12 @@ impl Call {
         match self {
             Self::Arg {
                 expr,
-                s0,
-                s1,
+                s0: _,
+                s1: _,
                 arg,
-                s2,
+                s2: _,
                 span,
             } => {
-                // `expr s0 ( s1 arg s2 )`
-                // -> `'{ s0 call: expr, arg: s1 arg s2 }`
                 let call = TableLitElem::Named {
                     name: Ident::new("call", span),
                     s0: Space::empty(span),
@@ -25,25 +23,17 @@ impl Call {
                 let arg = TableLitElem::Named {
                     name: Ident::new("arg", span),
                     s0: Space::empty(span),
-                    s1,
+                    s1: Space::empty(span),
                     value: arg,
                     span,
                 };
-                let elems = vec![
-                    (s0, call, Space::empty(span)),
-                    (Space::empty(span), arg, s2),
-                ];
-                let new = Expr::Lit(Lit::Table(TableLit(BoundedSeparated {
-                    elems,
-                    trailing: None,
-                    span,
-                })));
+                let new = Expr::Lit(Lit::Table(TableLit(
+                    BoundedSeparated::new(span).then(call).then(arg),
+                )));
                 (new, true)
             }
 
             Self::NoArg { expr, s0, s1, span } => {
-                // `expr s0 ( s1 )`
-                // -> `expr s0 ( s1 nil )`
                 let new = Expr::Call(Self::Arg {
                     expr,
                     s0,
@@ -61,8 +51,6 @@ impl Call {
                 constr,
                 span,
             } => {
-                // `expr s0 {..}`
-                // -> `expr s0 ( {..} )`
                 let new = Expr::Call(Self::Arg {
                     expr,
                     s0,

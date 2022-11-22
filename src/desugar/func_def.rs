@@ -8,66 +8,46 @@ impl FuncDef {
     pub fn desugar(self) -> (Expr, bool) {
         match self {
             Self::AnonNoArg {
-                s0,
-                s1,
-                s2,
+                s0: _,
+                s1: _,
+                s2: _,
                 body,
                 span,
             } => {
-                // `function s0 ( s1 ) s2 body`
-                // -> `{ '{ quote: body }, scope: 'scope() }`
-                let quote = Expr::Lit(Lit::Table(TableLit(BoundedSeparated {
-                    elems: vec![(
-                        Space::empty(span),
-                        TableLitElem::Named {
-                            name: Ident::new("quote", span),
-                            s0: Space::empty(span),
-                            s1: Space::empty(span),
-                            value: body,
-                            span,
-                        },
-                        Space::empty(span),
-                    )],
-                    trailing: None,
+                let quote = TableLit(BoundedSeparated::new(span).then(TableLitElem::Named {
+                    name: Ident::new("quote", span),
+                    s0: Space::empty(span),
+                    s1: Space::empty(span),
+                    value: body,
                     span,
-                })));
+                }));
+                let quote = Box::new(Expr::Lit(Lit::Table(quote)));
                 let scope = Expr::Call(Call::NoArg {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Scope, span))),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
                 });
-                let new = Expr::TableConstr(TableConstr(BoundedSeparated {
-                    elems: vec![
-                        (
-                            Space::empty(span),
-                            TableConstrElem::Lit(TableLitElem::Positional(Box::new(quote))),
-                            Space::empty(span),
-                        ),
-                        (
-                            Space::empty(span),
-                            TableConstrElem::Lit(TableLitElem::Named {
-                                name: Ident::new("scope", span),
-                                s0: Space::empty(span),
-                                s1: Space::empty(span),
-                                value: Box::new(scope),
-                                span,
-                            }),
-                            Space::empty(span),
-                        ),
-                    ],
-                    trailing: None,
-                    span,
-                }));
+                let new = Expr::TableConstr(TableConstr(
+                    BoundedSeparated::new(span)
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(quote)))
+                        .then(TableConstrElem::Lit(TableLitElem::Named {
+                            name: Ident::new("scope", span),
+                            s0: Space::empty(span),
+                            s1: Space::empty(span),
+                            value: Box::new(scope),
+                            span,
+                        })),
+                ));
                 (new, true)
             }
 
             Self::AnonArg {
-                s0,
-                s1,
+                s0: _,
+                s1: _,
                 arg,
-                s2,
-                s3,
+                s2: _,
+                s3: _,
                 body,
                 span,
             } => {
@@ -87,28 +67,14 @@ impl FuncDef {
                     value: Box::new(arg_call),
                     span,
                 });
-                let body_elems = vec![
-                    (
-                        Space::empty(span),
-                        TableLitElem::Positional(Box::new(arg_assign)),
-                        Space::empty(span),
-                    ),
-                    (
-                        Space::empty(span),
-                        TableLitElem::Positional(body),
-                        Space::empty(span),
-                    ),
-                ];
-                let body = Expr::Lit(Lit::Table(TableLit(BoundedSeparated {
-                    elems: body_elems,
-                    trailing: None,
-                    span,
-                })));
+                let body = BoundedSeparated::new(span)
+                    .then(TableLitElem::Positional(Box::new(arg_assign)))
+                    .then(TableLitElem::Positional(body));
                 let new = Expr::FuncDef(Self::AnonNoArg {
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     s2: Space::empty(span),
-                    body: Box::new(body),
+                    body: Box::new(Expr::Lit(Lit::Table(TableLit(body)))),
                     span,
                 });
                 (new, true)

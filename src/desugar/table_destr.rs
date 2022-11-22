@@ -31,49 +31,31 @@ impl TableDestr {
         let Self {
             local,
             pattern,
-            s0,
-            s1,
+            s0: _,
+            s1: _,
             value,
             span,
         } = self;
 
-        let mut elems = vec![
-            (
-                Space::empty(span),
-                TableConstrElem::Lit(TableLitElem::Positional(Box::new(Expr::TableConstr(
-                    pattern_to_constr(pattern),
-                )))),
-                s0,
-            ),
-            (
-                s1,
-                TableConstrElem::Lit(TableLitElem::Positional(value)),
-                Space::empty(span),
-            ),
-        ];
-        if let Some(local) = local {
-            elems.push((
-                Space::empty(span),
-                TableConstrElem::Lit(TableLitElem::Named {
-                    name: Ident::new("local", span),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    value: Box::new(Expr::Lit(Lit::Bool(true, span))),
-                    span,
-                }),
-                local,
-            ))
+        let mut constr = BoundedSeparated::new(span)
+            .then(TableConstrElem::Lit(TableLitElem::Positional(Box::new(
+                Expr::TableConstr(pattern_to_constr(pattern)),
+            ))))
+            .then(TableConstrElem::Lit(TableLitElem::Positional(value)));
+        if local.is_some() {
+            constr = constr.then(TableConstrElem::Lit(TableLitElem::Named {
+                name: Ident::new("local", span),
+                s0: Space::empty(span),
+                s1: Space::empty(span),
+                value: Box::new(Expr::Lit(Lit::Bool(true, span))),
+                span,
+            }));
         }
 
-        let constr = TableConstr(BoundedSeparated {
-            elems,
-            trailing: None,
-            span,
-        });
         let new = Expr::Call(Call::Constr {
             expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Destructure, span))),
             s0: Space::empty(span),
-            constr,
+            constr: TableConstr(constr),
             span,
         });
         (new, true)

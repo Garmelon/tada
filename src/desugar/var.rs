@@ -1,5 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, TableConstr, TableConstrElem,
+    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstr, TableConstrElem,
     TableLitElem, Var,
 };
 use crate::builtin::Builtin;
@@ -66,48 +66,33 @@ impl Var {
             }
 
             Self::Assign {
-                local: Some(local),
-                s0,
+                local: Some(_),
+                s0: _,
                 index,
-                s1,
-                s2,
-                s3,
+                s1: _,
+                s2: _,
+                s3: _,
                 value,
                 span,
             } => {
-                // `local [ s0 index s1 ] s2 = s3 value`
-                // --> `'setraw { 'scope(), local s0 index s1, s2 s3 value }`
                 let scope = Expr::Call(Call::NoArg {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::Scope, span))),
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     span,
                 });
-                let elems = vec![
-                    (
-                        Space::empty(span),
-                        TableConstrElem::Lit(TableLitElem::Positional(Box::new(scope))),
-                        Space::empty(span),
-                    ),
-                    (
-                        local.then_line(Line::Empty).then(s0),
-                        TableConstrElem::Lit(TableLitElem::Positional(index)),
-                        s1,
-                    ),
-                    (
-                        s2.then_line(Line::Empty).then(s3),
-                        TableConstrElem::Lit(TableLitElem::Positional(value)),
-                        Space::empty(span),
-                    ),
-                ];
+                let constr = TableConstr(
+                    BoundedSeparated::new(span)
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(Box::new(
+                            scope,
+                        ))))
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
+                        .then(TableConstrElem::Lit(TableLitElem::Positional(value))),
+                );
                 let new = Expr::Call(Call::Constr {
                     expr: Box::new(Expr::Lit(Lit::Builtin(Builtin::SetRaw, span))),
                     s0: Space::empty(span),
-                    constr: TableConstr(BoundedSeparated {
-                        elems,
-                        trailing: None,
-                        span,
-                    }),
+                    constr,
                     span,
                 });
                 (new, true)

@@ -89,3 +89,19 @@ impl<E> HasSpan for BoundedSeparated<E> {
         self.span
     }
 }
+
+impl<E> BoundedSeparated<E> {
+    pub fn new(span: Span) -> Self {
+        Self {
+            elems: vec![],
+            trailing: None,
+            span,
+        }
+    }
+
+    pub fn then(mut self, elem: E) -> Self {
+        self.elems
+            .push((Space::empty(self.span), elem, Space::empty(self.span)));
+        self
+    }
+}

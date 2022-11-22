@@ -28,11 +28,9 @@ impl TableConstr {
             value: Box::new(Expr::Lit(Lit::Table(TableLit(elems)))),
             span,
         };
-        let mut expr = Expr::Lit(Lit::Table(TableLit(BoundedSeparated {
-            elems: vec![(Space::empty(span), raw_elem, Space::empty(span))],
-            trailing: None,
-            span,
-        })));
+        let mut expr = Expr::Lit(Lit::Table(TableLit(
+            BoundedSeparated::new(span).then(raw_elem),
+        )));
 
         // `sl [ s0 index s1 ] s2 = s3 value sr`
         // -> `expr s0 [ s1 index s2 ] s3 = s4 s5 value`
