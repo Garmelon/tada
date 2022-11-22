@@ -13,8 +13,7 @@ impl Expr {
             Self::Var(var) => var.desugar(),
             Self::TableConstr(constr) => constr.desugar(),
             Self::TableDestr(destr) => destr.desugar(),
-
-            Self::FuncDef(def) => (Self::FuncDef(def), false), // TODO Implement
+            Self::FuncDef(def) => def.desugar(),
 
             Self::Paren {
                 s0,
