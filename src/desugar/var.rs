@@ -1,5 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstrElem, TableLitElem, Var,
+    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstrElem, Var,
 };
 use crate::builtin::Builtin;
 use crate::span::HasSpan;
@@ -81,11 +81,9 @@ impl Var {
                     span,
                 };
                 let constr = BoundedSeparated::new(span)
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(
-                        scope.expr().boxed(),
-                    )))
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(value)))
+                    .then(TableConstrElem::positional(scope.expr().boxed()))
+                    .then(TableConstrElem::positional(index))
+                    .then(TableConstrElem::positional(value))
                     .table_constr();
                 let new = Call::Constr {
                     expr: Lit::Builtin(Builtin::SetRaw, span).expr().boxed(),

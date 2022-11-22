@@ -1,6 +1,6 @@
 use crate::span::{HasSpan, Span};
 
-use super::{BoundedSeparated, Expr, Space, TableLitElem};
+use super::{BoundedSeparated, Expr, Ident, Space, TableLitElem};
 
 #[derive(Debug, Clone)]
 pub enum TableConstrElem {
@@ -26,6 +26,28 @@ impl HasSpan for TableConstrElem {
         match self {
             Self::Lit(lit) => lit.span(),
             Self::Indexed { span, .. } => *span,
+        }
+    }
+}
+
+impl TableConstrElem {
+    pub fn positional(value: Box<Expr>) -> Self {
+        Self::Lit(TableLitElem::Positional(value))
+    }
+
+    pub fn named(name: Ident, value: Box<Expr>, span: Span) -> Self {
+        Self::Lit(TableLitElem::named(name, value, span))
+    }
+
+    pub fn indexed(index: Box<Expr>, value: Box<Expr>, span: Span) -> Self {
+        Self::Indexed {
+            s0: Space::empty(span),
+            index,
+            s1: Space::empty(span),
+            s2: Space::empty(span),
+            s3: Space::empty(span),
+            value,
+            span,
         }
     }
 }

@@ -1,6 +1,4 @@
-use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstrElem, TableLitElem,
-};
+use crate::ast::{BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstrElem};
 use crate::builtin::Builtin;
 
 impl Field {
@@ -15,8 +13,8 @@ impl Field {
                 span,
             } => {
                 let constr = BoundedSeparated::new(span)
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
+                    .then(TableConstrElem::positional(expr))
+                    .then(TableConstrElem::positional(index))
                     .table_constr();
                 let new = Call::Constr {
                     expr: Lit::Builtin(Builtin::Get, span).expr().boxed(),
@@ -39,9 +37,9 @@ impl Field {
                 span,
             } => {
                 let constr = BoundedSeparated::new(span)
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(expr)))
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(index)))
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(value)))
+                    .then(TableConstrElem::positional(expr))
+                    .then(TableConstrElem::positional(index))
+                    .then(TableConstrElem::positional(value))
                     .table_constr();
                 let new = Call::Constr {
                     expr: Lit::Builtin(Builtin::Set, span).expr().boxed(),

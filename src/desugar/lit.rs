@@ -41,7 +41,7 @@ impl Lit {
         match self {
             Self::Table(table) => {
                 let (table, desugared) = table.desugar();
-                (Self::Table(table), desugared)
+                (table.lit(), desugared)
             }
 
             lit => (lit, false),

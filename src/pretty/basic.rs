@@ -1,6 +1,6 @@
 use pretty::{DocAllocator, DocBuilder, Pretty};
 
-use crate::ast::{BoundedSeparated, Ident, Space};
+use crate::ast::{BoundedSeparated, Ident};
 
 use super::NEST_DEPTH;
 

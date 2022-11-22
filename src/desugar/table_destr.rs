@@ -8,9 +8,9 @@ fn pattern_to_constr(pattern: TablePattern) -> TableConstr {
     pattern
         .0
         .map(|e| match e {
-            TablePatternElem::Positional(ident) => TableConstrElem::Lit(TableLitElem::Positional(
-                StringLit::from_ident(ident).lit().expr().boxed(),
-            )),
+            TablePatternElem::Positional(ident) => {
+                TableConstrElem::positional(StringLit::from_ident(ident).lit().expr().boxed())
+            }
 
             TablePatternElem::Named {
                 name,
@@ -41,16 +41,16 @@ impl TableDestr {
         } = self;
 
         let mut constr = BoundedSeparated::new(span)
-            .then(TableConstrElem::Lit(TableLitElem::Positional(
+            .then(TableConstrElem::positional(
                 pattern_to_constr(pattern).expr().boxed(),
-            )))
-            .then(TableConstrElem::Lit(TableLitElem::Positional(value)));
+            ))
+            .then(TableConstrElem::positional(value));
         if local.is_some() {
-            constr = constr.then(TableConstrElem::Lit(TableLitElem::named(
+            constr = constr.then(TableConstrElem::named(
                 Ident::new("local", span),
                 Lit::Bool(true, span).expr().boxed(),
                 span,
-            )));
+            ));
         }
 
         let new = Call::Constr {

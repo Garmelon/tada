@@ -15,8 +15,10 @@ impl FuncDef {
             } => {
                 let quote = BoundedSeparated::new(span)
                     .then(TableLitElem::named(Ident::new("quote", span), body, span))
-                    .table_lit();
-                let quote = quote.lit().expr().boxed();
+                    .table_lit()
+                    .lit()
+                    .expr()
+                    .boxed();
                 let scope = Call::NoArg {
                     expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
                     s0: Space::empty(span),
@@ -24,12 +26,12 @@ impl FuncDef {
                     span,
                 };
                 let new = BoundedSeparated::new(span)
-                    .then(TableConstrElem::Lit(TableLitElem::Positional(quote)))
-                    .then(TableConstrElem::Lit(TableLitElem::named(
+                    .then(TableConstrElem::positional(quote))
+                    .then(TableConstrElem::named(
                         Ident::new("scope", span),
                         scope.expr().boxed(),
                         span,
-                    )))
+                    ))
                     .table_constr()
                     .expr();
                 (new, true)
