@@ -1,4 +1,4 @@
-use crate::ast::BoundedSeparated;
+use crate::ast::{BoundedSeparated, Space};
 
 impl<E> BoundedSeparated<E> {
     pub fn desugar(self, desugar_elem: impl Fn(E) -> (E, bool)) -> (Self, bool) {
@@ -20,5 +20,25 @@ impl<E> BoundedSeparated<E> {
             span: self.span,
         };
         (new, desugared)
+    }
+
+    pub fn remove_map<E1, E2>(
+        self,
+        f: impl Fn(E) -> Result<E1, E2>,
+    ) -> (BoundedSeparated<E1>, Vec<(Space, E2, Space)>) {
+        let mut kept = vec![];
+        let mut removed = vec![];
+        for (s0, elem, s1) in self.elems {
+            match f(elem) {
+                Ok(elem) => kept.push((s0, elem, s1)),
+                Err(elem) => removed.push((s0, elem, s1)),
+            }
+        }
+        let new = BoundedSeparated {
+            elems: kept,
+            trailing: self.trailing,
+            span: self.span,
+        };
+        (new, removed)
     }
 }
