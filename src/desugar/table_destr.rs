@@ -46,13 +46,11 @@ impl TableDestr {
             )))
             .then(TableConstrElem::Lit(TableLitElem::Positional(value)));
         if local.is_some() {
-            constr = constr.then(TableConstrElem::Lit(TableLitElem::Named {
-                name: Ident::new("local", span),
-                s0: Space::empty(span),
-                s1: Space::empty(span),
-                value: Lit::Bool(true, span).expr().boxed(),
+            constr = constr.then(TableConstrElem::Lit(TableLitElem::named(
+                Ident::new("local", span),
+                Lit::Bool(true, span).expr().boxed(),
                 span,
-            }));
+            )));
         }
 
         let new = Call::Constr {

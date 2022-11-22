@@ -13,23 +13,9 @@ impl Call {
                 s2: _,
                 span,
             } => {
-                let call = TableLitElem::Named {
-                    name: Ident::new("call", span),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    value: expr,
-                    span,
-                };
-                let arg = TableLitElem::Named {
-                    name: Ident::new("arg", span),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    value: arg,
-                    span,
-                };
                 let new = BoundedSeparated::new(span)
-                    .then(call)
-                    .then(arg)
+                    .then(TableLitElem::named(Ident::new("call", span), expr, span))
+                    .then(TableLitElem::named(Ident::new("arg", span), arg, span))
                     .table_lit()
                     .lit()
                     .expr();

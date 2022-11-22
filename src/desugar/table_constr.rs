@@ -1,6 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Expr, Field, Ident, Line, Lit, Space, TableConstr, TableConstrElem,
-    TableLitElem,
+    BoundedSeparated, Expr, Field, Ident, Line, TableConstr, TableConstrElem, TableLitElem,
 };
 use crate::span::HasSpan;
 
@@ -21,15 +20,12 @@ impl TableConstr {
             } => Err((s0, index, s1, s2, s3, value, span)),
         });
 
-        let raw_elem = TableLitElem::Named {
-            name: Ident::new("raw", span),
-            s0: Space::empty(span),
-            s1: Space::empty(span),
-            value: elems.table_lit().lit().expr().boxed(),
-            span,
-        };
         let mut expr = BoundedSeparated::new(span)
-            .then(raw_elem)
+            .then(TableLitElem::named(
+                Ident::new("raw", span),
+                elems.table_lit().lit().expr().boxed(),
+                span,
+            ))
             .table_lit()
             .lit()
             .expr();

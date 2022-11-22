@@ -144,6 +144,18 @@ impl HasSpan for TableLitElem {
     }
 }
 
+impl TableLitElem {
+    pub fn named(name: Ident, value: Box<Expr>, span: Span) -> Self {
+        Self::Named {
+            name,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            value,
+            span,
+        }
+    }
+}
+
 /// `'{ a, foo: b }`
 #[derive(Debug, Clone)]
 pub struct TableLit(pub BoundedSeparated<TableLitElem>);
