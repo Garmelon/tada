@@ -53,12 +53,6 @@ impl HasSpan for NumLit {
     }
 }
 
-impl NumLit {
-    pub fn lit(self) -> Lit {
-        Lit::Num(self)
-    }
-}
-
 #[derive(Clone)]
 pub enum StringLitElem {
     /// Normal unescaped characters

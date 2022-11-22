@@ -39,17 +39,6 @@ impl Space {
             span,
         }
     }
-
-    pub fn then(mut self, other: Self) -> Self {
-        self.lines.extend(other.lines);
-        self.span = self.span.join(other.span);
-        self
-    }
-
-    pub fn then_line(mut self, line: Line) -> Self {
-        self.lines.push(line);
-        self
-    }
 }
 
 #[derive(Clone)]

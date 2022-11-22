@@ -38,18 +38,6 @@ impl TableConstrElem {
     pub fn named(name: Ident, value: Box<Expr>, span: Span) -> Self {
         Self::Lit(TableLitElem::named(name, value, span))
     }
-
-    pub fn indexed(index: Box<Expr>, value: Box<Expr>, span: Span) -> Self {
-        Self::Indexed {
-            s0: Space::empty(span),
-            index,
-            s1: Space::empty(span),
-            s2: Space::empty(span),
-            s3: Space::empty(span),
-            value,
-            span,
-        }
-    }
 }
 
 /// `{ a, b, foo: c, [d]: e }`
