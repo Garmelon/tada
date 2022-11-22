@@ -1,6 +1,6 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, Ident, Lit, Space, StringLit, TableConstr, TableConstrElem,
-    TableDestr, TableLitElem, TablePattern, TablePatternElem,
+    BoundedSeparated, Call, Expr, Ident, Lit, StringLit, TableConstr, TableConstrElem, TableDestr,
+    TableLitElem, TablePattern, TablePatternElem,
 };
 use crate::builtin::Builtin;
 
@@ -53,12 +53,11 @@ impl TableDestr {
             ));
         }
 
-        let new = Call::Constr {
-            expr: Lit::Builtin(Builtin::Destructure, span).expr().boxed(),
-            s0: Space::empty(span),
-            constr: constr.table_constr(),
+        let new = Call::constr(
+            Lit::Builtin(Builtin::Destructure, span).expr().boxed(),
+            constr.table_constr(),
             span,
-        };
+        );
         (new.expr(), true)
     }
 }

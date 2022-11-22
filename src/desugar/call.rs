@@ -1,4 +1,4 @@
-use crate::ast::{BoundedSeparated, Call, Expr, Ident, Lit, Space, TableLitElem};
+use crate::ast::{BoundedSeparated, Call, Expr, Ident, Lit, TableLitElem};
 
 // TODO Add span for just the parentheses to ast, or limit span to parentheses
 
@@ -22,32 +22,23 @@ impl Call {
                 (new, true)
             }
 
-            Self::NoArg { expr, s0, s1, span } => {
-                let new = Self::Arg {
-                    expr,
-                    s0,
-                    s1,
-                    arg: Lit::Nil(span).expr().boxed(),
-                    s2: Space::empty(span),
-                    span,
-                };
+            Self::NoArg {
+                expr,
+                s0: _,
+                s1: _,
+                span,
+            } => {
+                let new = Self::arg(expr, Lit::Nil(span).expr().boxed(), span);
                 (new.expr(), true)
             }
 
             Self::Constr {
                 expr,
-                s0,
+                s0: _,
                 constr,
                 span,
             } => {
-                let new = Self::Arg {
-                    expr,
-                    s0,
-                    s1: Space::empty(span),
-                    arg: constr.expr().boxed(),
-                    s2: Space::empty(span),
-                    span,
-                };
+                let new = Self::arg(expr, constr.expr().boxed(), span);
                 (new.expr(), true)
             }
         }

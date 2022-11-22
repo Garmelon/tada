@@ -13,14 +13,7 @@ impl Var {
                 s1,
                 span,
             } => {
-                // `[ s0 index s1 ]`
-                // -> `'scope()[ s0 index s1 ]`
-                let scope = Call::NoArg {
-                    expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    span,
-                };
+                let scope = Call::no_arg(Lit::Builtin(Builtin::Scope, span).expr().boxed(), span);
                 let new = Field::Access {
                     expr: scope.expr().boxed(),
                     s0: Space::empty(span),
@@ -42,14 +35,7 @@ impl Var {
                 value,
                 span,
             } => {
-                // `[ s0 index s1 ] s2 = s3 value`
-                // -> `'scope()[ s0 index s1 ] s2 = s3 value`
-                let scope = Call::NoArg {
-                    expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    span,
-                };
+                let scope = Call::no_arg(Lit::Builtin(Builtin::Scope, span).expr().boxed(), span);
                 let new = Field::Assign {
                     expr: scope.expr().boxed(),
                     s0: Space::empty(span),
@@ -74,23 +60,17 @@ impl Var {
                 value,
                 span,
             } => {
-                let scope = Call::NoArg {
-                    expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    span,
-                };
+                let scope = Call::no_arg(Lit::Builtin(Builtin::Scope, span).expr().boxed(), span);
                 let constr = BoundedSeparated::new(span)
                     .then(TableConstrElem::positional(scope.expr().boxed()))
                     .then(TableConstrElem::positional(index))
                     .then(TableConstrElem::positional(value))
                     .table_constr();
-                let new = Call::Constr {
-                    expr: Lit::Builtin(Builtin::SetRaw, span).expr().boxed(),
-                    s0: Space::empty(span),
+                let new = Call::constr(
+                    Lit::Builtin(Builtin::SetRaw, span).expr().boxed(),
                     constr,
                     span,
-                };
+                );
                 (new.expr(), true)
             }
 

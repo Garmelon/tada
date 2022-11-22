@@ -16,12 +16,11 @@ impl Field {
                     .then(TableConstrElem::positional(expr))
                     .then(TableConstrElem::positional(index))
                     .table_constr();
-                let new = Call::Constr {
-                    expr: Lit::Builtin(Builtin::Get, span).expr().boxed(),
-                    s0: Space::empty(span),
+                let new = Call::constr(
+                    Lit::Builtin(Builtin::Get, span).expr().boxed(),
                     constr,
                     span,
-                };
+                );
                 (new.expr(), true)
             }
 
@@ -41,12 +40,11 @@ impl Field {
                     .then(TableConstrElem::positional(index))
                     .then(TableConstrElem::positional(value))
                     .table_constr();
-                let new = Call::Constr {
-                    expr: Lit::Builtin(Builtin::Set, span).expr().boxed(),
-                    s0: Space::empty(span),
+                let new = Call::constr(
+                    Lit::Builtin(Builtin::Set, span).expr().boxed(),
                     constr,
                     span,
-                };
+                );
                 (new.expr(), true)
             }
 

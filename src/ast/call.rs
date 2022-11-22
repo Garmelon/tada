@@ -48,6 +48,35 @@ impl HasSpan for Call {
 }
 
 impl Call {
+    pub fn arg(base: Box<Expr>, arg: Box<Expr>, span: Span) -> Self {
+        Self::Arg {
+            expr: base,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            arg,
+            s2: Space::empty(span),
+            span,
+        }
+    }
+
+    pub fn no_arg(base: Box<Expr>, span: Span) -> Self {
+        Self::NoArg {
+            expr: base,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            span,
+        }
+    }
+
+    pub fn constr(base: Box<Expr>, constr: TableConstr, span: Span) -> Self {
+        Self::Constr {
+            expr: base,
+            s0: Space::empty(span),
+            constr,
+            span,
+        }
+    }
+
     pub fn expr(self) -> Expr {
         Expr::Call(self)
     }

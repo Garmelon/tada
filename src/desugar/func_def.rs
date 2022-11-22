@@ -15,26 +15,17 @@ impl FuncDef {
             } => {
                 let quote = BoundedSeparated::new(span)
                     .then(TableLitElem::named(Ident::new("quote", span), body, span))
-                    .table_lit()
-                    .lit()
-                    .expr()
-                    .boxed();
-                let scope = Call::NoArg {
-                    expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    span,
-                };
+                    .table_lit();
+                let scope = Call::no_arg(Lit::Builtin(Builtin::Scope, span).expr().boxed(), span);
                 let new = BoundedSeparated::new(span)
-                    .then(TableConstrElem::positional(quote))
+                    .then(TableConstrElem::positional(Box::new(quote.lit().expr())))
                     .then(TableConstrElem::named(
                         Ident::new("scope", span),
                         scope.expr().boxed(),
                         span,
                     ))
-                    .table_constr()
-                    .expr();
-                (new, true)
+                    .table_constr();
+                (new.expr(), true)
             }
 
             Self::AnonArg {
@@ -48,12 +39,7 @@ impl FuncDef {
             } => {
                 // `function s0 ( s1 arg s2 ) s3 body`
                 // -> `function ( ) '{ local arg = 'arg(), body }`
-                let arg_call = Call::NoArg {
-                    expr: Lit::Builtin(Builtin::Arg, span).expr().boxed(),
-                    s0: Space::empty(span),
-                    s1: Space::empty(span),
-                    span,
-                };
+                let arg_call = Call::no_arg(Lit::Builtin(Builtin::Arg, span).expr().boxed(), span);
                 let arg_assign = Var::AssignIdent {
                     local: Some(Space::empty(span)),
                     name: arg,
