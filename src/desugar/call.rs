@@ -16,10 +16,8 @@ impl Call {
                 let new = BoundedSeparated::new(span)
                     .then(TableLitElem::named(Ident::new("call", span), expr, span))
                     .then(TableLitElem::named(Ident::new("arg", span), arg, span))
-                    .table_lit()
-                    .lit()
-                    .expr();
-                (new, true)
+                    .table_lit();
+                (new.lit().expr(), true)
             }
 
             Self::NoArg {

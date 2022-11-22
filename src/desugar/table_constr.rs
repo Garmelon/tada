@@ -1,5 +1,5 @@
 use crate::ast::{
-    BoundedSeparated, Expr, Field, Ident, Line, TableConstr, TableConstrElem, TableLitElem,
+    BoundedSeparated, Expr, Field, Ident, TableConstr, TableConstrElem, TableLitElem,
 };
 use crate::span::HasSpan;
 
@@ -10,14 +10,14 @@ impl TableConstr {
         let (elems, setters) = self.0.remove_map(|e| match e {
             TableConstrElem::Lit(lit) => Ok(lit),
             TableConstrElem::Indexed {
-                s0,
+                s0: _,
                 index,
-                s1,
-                s2,
-                s3,
+                s1: _,
+                s2: _,
+                s3: _,
                 value,
                 span,
-            } => Err((s0, index, s1, s2, s3, value, span)),
+            } => Err((index, value, span)),
         });
 
         let mut expr = BoundedSeparated::new(span)
@@ -30,21 +30,8 @@ impl TableConstr {
             .lit()
             .expr();
 
-        // `sl [ s0 index s1 ] s2 = s3 value sr`
-        // -> `expr s0 [ s1 index s2 ] s3 = s4 s5 value`
-        for (s0, (s1, index, s2, s3, s4, value, span), s5) in setters {
-            expr = Field::Assign {
-                expr: expr.boxed(),
-                s0,
-                s1,
-                index,
-                s2,
-                s3,
-                s4: s4.then_line(Line::Empty).then(s5),
-                value,
-                span,
-            }
-            .expr();
+        for (_, (index, value, span), _) in setters {
+            expr = Field::assign(expr.boxed(), index, value, span).expr();
         }
 
         (expr, true)

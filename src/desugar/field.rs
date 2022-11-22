@@ -1,4 +1,4 @@
-use crate::ast::{BoundedSeparated, Call, Expr, Field, Lit, Space, StringLit, TableConstrElem};
+use crate::ast::{BoundedSeparated, Call, Expr, Field, Lit, StringLit, TableConstrElem};
 use crate::builtin::Builtin;
 
 impl Field {
@@ -50,47 +50,35 @@ impl Field {
 
             Self::AccessIdent {
                 expr,
-                s0,
-                s1,
+                s0: _,
+                s1: _,
                 ident,
                 span,
             } => {
-                // `expr s0 . s1 ident´
-                // -> `expr s0 [ s1 ident_str ]`
-                let new = Self::Access {
+                let new = Self::access(
                     expr,
-                    s0,
-                    s1,
-                    index: StringLit::from_ident(ident).lit().expr().boxed(),
-                    s2: Space::empty(span),
+                    StringLit::from_ident(ident).lit().expr().boxed(),
                     span,
-                };
+                );
                 (new.expr(), true)
             }
 
             Self::AssignIdent {
                 expr,
-                s0,
-                s1,
+                s0: _,
+                s1: _,
                 ident,
-                s2,
-                s3,
+                s2: _,
+                s3: _,
                 value,
                 span,
             } => {
-                // `expr s0 . s1 ident s2 = s3 value`
-                // -> `expr s0 [ s1 ident_str ] s2 = s3 value`
-                let new = Self::Assign {
+                let new = Self::assign(
                     expr,
-                    s0,
-                    s1,
-                    index: StringLit::from_ident(ident).lit().expr().boxed(),
-                    s2: Space::empty(span),
-                    s3: s2,
-                    s4: s3,
+                    StringLit::from_ident(ident).lit().expr().boxed(),
                     value,
                     span,
-                };
+                );
                 (new.expr(), true)
             }
         }

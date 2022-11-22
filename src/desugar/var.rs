@@ -8,45 +8,28 @@ impl Var {
     pub fn desugar(self) -> (Expr, bool) {
         match self {
             Self::Access {
-                s0,
+                s0: _,
                 index,
-                s1,
+                s1: _,
                 span,
             } => {
                 let scope = Call::no_arg(Lit::Builtin(Builtin::Scope, span).expr().boxed(), span);
-                let new = Field::Access {
-                    expr: scope.expr().boxed(),
-                    s0: Space::empty(span),
-                    s1: s0,
-                    index,
-                    s2: s1,
-                    span,
-                };
+                let new = Field::access(scope.expr().boxed(), index, span);
                 (new.expr(), true)
             }
 
             Self::Assign {
                 local: None,
-                s0,
+                s0: _,
                 index,
-                s1,
-                s2,
-                s3,
+                s1: _,
+                s2: _,
+                s3: _,
                 value,
                 span,
             } => {
                 let scope = Call::no_arg(Lit::Builtin(Builtin::Scope, span).expr().boxed(), span);
-                let new = Field::Assign {
-                    expr: scope.expr().boxed(),
-                    s0: Space::empty(span),
-                    s1: s0,
-                    index,
-                    s2: s1,
-                    s3: s2,
-                    s4: s3,
-                    value,
-                    span,
-                };
+                let new = Field::assign(scope.expr().boxed(), index, value, span);
                 (new.expr(), true)
             }
 

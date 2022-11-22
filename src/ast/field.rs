@@ -69,6 +69,54 @@ impl HasSpan for Field {
 }
 
 impl Field {
+    pub fn access(base: Box<Expr>, index: Box<Expr>, span: Span) -> Self {
+        Self::Access {
+            expr: base,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            index,
+            s2: Space::empty(span),
+            span,
+        }
+    }
+
+    pub fn assign(base: Box<Expr>, index: Box<Expr>, value: Box<Expr>, span: Span) -> Self {
+        Self::Assign {
+            expr: base,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            index,
+            s2: Space::empty(span),
+            s3: Space::empty(span),
+            s4: Space::empty(span),
+            value,
+            span,
+        }
+    }
+
+    pub fn access_ident(base: Box<Expr>, ident: Ident, span: Span) -> Self {
+        Self::AccessIdent {
+            expr: base,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            ident,
+            span,
+        }
+    }
+
+    pub fn assign_ident(base: Box<Expr>, ident: Ident, value: Box<Expr>, span: Span) -> Self {
+        Self::AssignIdent {
+            expr: base,
+            s0: Space::empty(span),
+            s1: Space::empty(span),
+            ident,
+            s2: Space::empty(span),
+            s3: Space::empty(span),
+            value,
+            span,
+        }
+    }
+
     pub fn expr(self) -> Expr {
         Expr::Field(self)
     }
