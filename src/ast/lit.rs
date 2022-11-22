@@ -53,6 +53,12 @@ impl HasSpan for NumLit {
     }
 }
 
+impl NumLit {
+    pub fn lit(self) -> Lit {
+        Lit::Num(self)
+    }
+}
+
 #[derive(Clone)]
 pub enum StringLitElem {
     /// Normal unescaped characters
@@ -100,6 +106,10 @@ impl StringLit {
             span: ident.span,
         }
     }
+
+    pub fn lit(self) -> Lit {
+        Lit::String(self)
+    }
 }
 
 impl HasSpan for StringLit {
@@ -141,6 +151,12 @@ pub struct TableLit(pub BoundedSeparated<TableLitElem>);
 impl HasSpan for TableLit {
     fn span(&self) -> Span {
         self.0.span()
+    }
+}
+
+impl TableLit {
+    pub fn lit(self) -> Lit {
+        Lit::Table(self)
     }
 }
 

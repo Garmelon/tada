@@ -27,8 +27,12 @@ impl Call {
                     value: arg,
                     span,
                 };
-                let new =
-                    Lit::Table(BoundedSeparated::new(span).then(call).then(arg).table_lit()).expr();
+                let new = BoundedSeparated::new(span)
+                    .then(call)
+                    .then(arg)
+                    .table_lit()
+                    .lit()
+                    .expr();
                 (new, true)
             }
 

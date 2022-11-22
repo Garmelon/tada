@@ -25,10 +25,14 @@ impl TableConstr {
             name: Ident::new("raw", span),
             s0: Space::empty(span),
             s1: Space::empty(span),
-            value: Lit::Table(elems.table_lit()).expr().boxed(),
+            value: elems.table_lit().lit().expr().boxed(),
             span,
         };
-        let mut expr = Lit::Table(BoundedSeparated::new(span).then(raw_elem).table_lit()).expr();
+        let mut expr = BoundedSeparated::new(span)
+            .then(raw_elem)
+            .table_lit()
+            .lit()
+            .expr();
 
         // `sl [ s0 index s1 ] s2 = s3 value sr`
         // -> `expr s0 [ s1 index s2 ] s3 = s4 s5 value`

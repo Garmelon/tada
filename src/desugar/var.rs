@@ -102,7 +102,7 @@ impl Var {
                 let span = name.span();
                 let new = Self::Access {
                     s0: Space::empty(span),
-                    index: Lit::String(StringLit::from_ident(name)).expr().boxed(),
+                    index: StringLit::from_ident(name).lit().expr().boxed(),
                     s1: Space::empty(span),
                     span,
                 };
@@ -122,7 +122,7 @@ impl Var {
                 let new = Self::Assign {
                     local,
                     s0: Space::empty(span),
-                    index: Lit::String(StringLit::from_ident(name)).expr().boxed(),
+                    index: StringLit::from_ident(name).lit().expr().boxed(),
                     s1: Space::empty(span),
                     s2: s0,
                     s3: s1,

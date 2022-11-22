@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Lit, Program, Space};
+use crate::ast::{Program, Space};
 
 impl Program {
     pub fn desugar(self) -> (Self, bool) {
@@ -14,7 +14,7 @@ impl Program {
                 // -> `s0 table`
                 let new = Self::Expr {
                     s0,
-                    expr: Lit::Table(elems.table_lit()).expr(),
+                    expr: elems.table_lit().lit().expr(),
                     s1: Space::empty(span),
                     span,
                 };

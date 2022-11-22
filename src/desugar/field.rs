@@ -65,7 +65,7 @@ impl Field {
                     expr,
                     s0,
                     s1,
-                    index: Lit::String(StringLit::from_ident(ident)).expr().boxed(),
+                    index: StringLit::from_ident(ident).lit().expr().boxed(),
                     s2: Space::empty(span),
                     span,
                 };
@@ -88,7 +88,7 @@ impl Field {
                     expr,
                     s0,
                     s1,
-                    index: Lit::String(StringLit::from_ident(ident)).expr().boxed(),
+                    index: StringLit::from_ident(ident).lit().expr().boxed(),
                     s2: Space::empty(span),
                     s3: s2,
                     s4: s3,

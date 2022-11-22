@@ -9,7 +9,7 @@ fn pattern_to_constr(pattern: TablePattern) -> TableConstr {
         .0
         .map(|e| match e {
             TablePatternElem::Positional(ident) => TableConstrElem::Lit(TableLitElem::Positional(
-                Lit::String(StringLit::from_ident(ident)).expr().boxed(),
+                StringLit::from_ident(ident).lit().expr().boxed(),
             )),
 
             TablePatternElem::Named {
@@ -22,7 +22,7 @@ fn pattern_to_constr(pattern: TablePattern) -> TableConstr {
                 name,
                 s0,
                 s1,
-                value: Lit::String(StringLit::from_ident(ident)).expr().boxed(),
+                value: StringLit::from_ident(ident).lit().expr().boxed(),
                 span,
             }),
         })

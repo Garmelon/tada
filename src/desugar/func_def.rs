@@ -22,7 +22,7 @@ impl FuncDef {
                         span,
                     })
                     .table_lit();
-                let quote = Lit::Table(quote).expr().boxed();
+                let quote = quote.lit().expr().boxed();
                 let scope = Call::NoArg {
                     expr: Lit::Builtin(Builtin::Scope, span).expr().boxed(),
                     s0: Space::empty(span),
@@ -76,7 +76,7 @@ impl FuncDef {
                     s0: Space::empty(span),
                     s1: Space::empty(span),
                     s2: Space::empty(span),
-                    body: Lit::Table(body).expr().boxed(),
+                    body: body.lit().expr().boxed(),
                     span,
                 };
                 (new.expr(), true)
