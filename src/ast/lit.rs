@@ -93,6 +93,15 @@ pub struct StringLit {
     pub span: Span,
 }
 
+impl StringLit {
+    pub fn from_ident(ident: Ident) -> Self {
+        Self {
+            elems: vec![StringLitElem::Plain(ident.name)],
+            span: ident.span,
+        }
+    }
+}
+
 impl HasSpan for StringLit {
     fn span(&self) -> Span {
         self.span

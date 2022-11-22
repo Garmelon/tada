@@ -1,6 +1,6 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, StringLitElem, TableConstr,
-    TableConstrElem, TableLitElem, Var,
+    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, TableConstr, TableConstrElem,
+    TableLitElem, Var,
 };
 use crate::builtin::Builtin;
 use crate::span::HasSpan;
@@ -117,13 +117,9 @@ impl Var {
                 // `name`
                 // -> `[ name_str ]`
                 let span = name.span();
-                let name_str = Expr::Lit(Lit::String(StringLit {
-                    elems: vec![StringLitElem::Plain(name.name)],
-                    span,
-                }));
                 let new = Expr::Var(Self::Access {
                     s0: Space::empty(span),
-                    index: Box::new(name_str),
+                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(name)))),
                     s1: Space::empty(span),
                     span,
                 });
@@ -140,14 +136,10 @@ impl Var {
             } => {
                 // `local name s0 = s1 value`
                 // -> `local [ name_str ] s0 = s1 value`
-                let name_str = Expr::Lit(Lit::String(StringLit {
-                    elems: vec![StringLitElem::Plain(name.name)],
-                    span: name.span,
-                }));
                 let new = Expr::Var(Self::Assign {
                     local,
                     s0: Space::empty(span),
-                    index: Box::new(name_str),
+                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(name)))),
                     s1: Space::empty(span),
                     s2: s0,
                     s3: s1,

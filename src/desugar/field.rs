@@ -1,6 +1,6 @@
 use crate::ast::{
-    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, StringLitElem, TableConstr,
-    TableConstrElem, TableLitElem,
+    BoundedSeparated, Call, Expr, Field, Line, Lit, Space, StringLit, TableConstr, TableConstrElem,
+    TableLitElem,
 };
 use crate::builtin::Builtin;
 
@@ -94,15 +94,11 @@ impl Field {
             } => {
                 // `expr s0 . s1 ident´
                 // -> `expr s0 [ s1 ident_str ]`
-                let ident_str = Expr::Lit(Lit::String(StringLit {
-                    elems: vec![StringLitElem::Plain(ident.name)],
-                    span: ident.span,
-                }));
                 let new = Expr::Field(Self::Access {
                     expr,
                     s0,
                     s1,
-                    index: Box::new(ident_str),
+                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
                     s2: Space::empty(span),
                     span,
                 });
@@ -121,15 +117,11 @@ impl Field {
             } => {
                 // `expr s0 . s1 ident s2 = s3 value`
                 // -> `expr s0 [ s1 ident_str ] s2 = s3 value`
-                let ident_str = Expr::Lit(Lit::String(StringLit {
-                    elems: vec![StringLitElem::Plain(ident.name)],
-                    span: ident.span,
-                }));
                 let new = Expr::Field(Self::Assign {
                     expr,
                     s0,
                     s1,
-                    index: Box::new(ident_str),
+                    index: Box::new(Expr::Lit(Lit::String(StringLit::from_ident(ident)))),
                     s2: Space::empty(span),
                     s3: s2,
                     s4: s3,
