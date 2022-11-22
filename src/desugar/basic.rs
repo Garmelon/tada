@@ -22,6 +22,20 @@ impl<E> BoundedSeparated<E> {
         (new, desugared)
     }
 
+    pub fn map<E2>(self, f: impl Fn(E) -> E2) -> BoundedSeparated<E2> {
+        let elems = self
+            .elems
+            .into_iter()
+            .map(|(s0, e, s1)| (s0, f(e), s1))
+            .collect::<Vec<_>>();
+
+        BoundedSeparated {
+            elems,
+            trailing: self.trailing,
+            span: self.span,
+        }
+    }
+
     pub fn remove_map<E1, E2>(
         self,
         f: impl Fn(E) -> Result<E1, E2>,

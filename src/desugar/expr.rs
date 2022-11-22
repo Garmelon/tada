@@ -12,9 +12,9 @@ impl Expr {
             Self::Field(field) => field.desugar(),
             Self::Var(var) => var.desugar(),
             Self::TableConstr(constr) => constr.desugar(),
+            Self::TableDestr(destr) => destr.desugar(),
 
-            Self::TableDestr(destr) => (Self::TableDestr(destr), false), // TODO Implement
-            Self::FuncDef(def) => (Self::FuncDef(def), false),           // TODO Implement
+            Self::FuncDef(def) => (Self::FuncDef(def), false), // TODO Implement
 
             Self::Paren {
                 s0,
